@@ -172,7 +172,7 @@
     const groundY = 430;
     const gravity = 0.62;
     const jumpPower = -12.8;
-    const maxJumpHeight = 142;
+    const maxJumpHeight = 168;
     const maxHeldJumpFrames = 30;
     const heldJumpGravityScale = 0.22;
 
@@ -208,7 +208,7 @@
       robot.vy = 0;
       robot.grounded = true;
       robot.blink = 0;
-      speed = 3.1;
+      speed = 2.55;
       score = 0;
       batteries = 0;
       gameOver = false;
@@ -297,7 +297,7 @@
     function update() {
       tick++;
       if (!gameOver) {
-        speed = Math.min(8.8, speed + 0.0009 + tick * 0.000000025);
+        speed = Math.min(8.8, speed + 0.00075 + tick * 0.000000025);
         score += 0.09 * speed;
         spawnTimer--;
         batteryTimer--;
