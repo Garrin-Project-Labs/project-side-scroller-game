@@ -203,7 +203,7 @@
       robot.vy = 0;
       robot.grounded = true;
       robot.blink = 0;
-      speed = 4.2;
+      speed = 3.1;
       score = 0;
       batteries = 0;
       gameOver = false;
@@ -254,7 +254,7 @@
     function spawnWater() {
       const width = 70 + Math.random() * 70;
       obstacles.push({ x: W + 30, y: groundY - 4, w: width, h: 26, kind: 'water' });
-      spawnTimer = Math.max(62, 112 - speed * 4 + Math.random() * 64);
+      spawnTimer = Math.max(66, 126 - speed * 5 + Math.random() * 66);
     }
 
     function spawnBattery() {
@@ -283,8 +283,8 @@
     function update() {
       tick++;
       if (!gameOver) {
-        speed += 0.0016;
-        score += 0.10 * speed;
+        speed = Math.min(8.8, speed + 0.0009 + tick * 0.000000025);
+        score += 0.09 * speed;
         spawnTimer--;
         batteryTimer--;
         if (spawnTimer <= 0) spawnWater();
