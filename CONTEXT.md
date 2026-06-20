@@ -9,6 +9,10 @@ This is the project glossary. Keep it short, plain, and useful. Add terms only w
 - **Jam Mode** — a temporary live collaboration window where the bot can listen more actively, then return to quiet mention-gated mode.
 - **Prototype** — throwaway code or mockups used to answer a question quickly before committing to a build direction.
 
+- **Runner World** — the moving play space: ground, sky, obstacles, pickups, and effects.
+- **Runner Tuning** — the numbers that control feel: speed ramp, jump arc, spacing, and obstacle pattern.
+- **Obstacle Pattern** — the planned sequence of pits, boxes, stacked boxes, and platforms that shapes difficulty.
+
 
 ## Starting summary
 
