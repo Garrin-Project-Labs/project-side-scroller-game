@@ -170,8 +170,8 @@
     const W = canvas.width;
     const H = canvas.height;
     const groundY = 430;
-    const gravity = 0.72;
-    const jumpPower = -15.6;
+    const gravity = 0.62;
+    const jumpPower = -15.2;
 
     let best = Number(localStorage.getItem('robotBatteryRunnerBest') || 0);
     bestEl.textContent = best;
@@ -203,7 +203,7 @@
       robot.vy = 0;
       robot.grounded = true;
       robot.blink = 0;
-      speed = 5.4;
+      speed = 4.2;
       score = 0;
       batteries = 0;
       gameOver = false;
@@ -254,7 +254,7 @@
     function spawnWater() {
       const width = 70 + Math.random() * 70;
       obstacles.push({ x: W + 30, y: groundY - 4, w: width, h: 26, kind: 'water' });
-      spawnTimer = Math.max(48, 92 - speed * 4 + Math.random() * 54);
+      spawnTimer = Math.max(62, 112 - speed * 4 + Math.random() * 64);
     }
 
     function spawnBattery() {
@@ -283,8 +283,8 @@
     function update() {
       tick++;
       if (!gameOver) {
-        speed += 0.0025;
-        score += 0.12 * speed;
+        speed += 0.0016;
+        score += 0.10 * speed;
         spawnTimer--;
         batteryTimer--;
         if (spawnTimer <= 0) spawnWater();
