@@ -170,11 +170,11 @@
     const W = canvas.width;
     const H = canvas.height;
     const groundY = 430;
-    const gravity = 0.62;
-    const jumpPower = -12.8;
+    const gravity = 0.54;
+    const jumpPower = -12.4;
     const maxJumpHeight = 168;
-    const maxHeldJumpFrames = 30;
-    const heldJumpGravityScale = 0.22;
+    const maxHeldJumpFrames = 60;
+    const heldJumpGravityScale = 0.12;
 
     let best = Number(localStorage.getItem('robotBatteryRunnerBest') || 0);
     bestEl.textContent = best;
