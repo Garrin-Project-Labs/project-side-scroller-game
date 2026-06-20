@@ -364,7 +364,6 @@
           if (rectsOverlap(hit, { ...battery, y: bobY })) {
             battery.collected = true;
             batteries++;
-            speed = Math.min(8.8, speed * 1.02);
             score += 60;
             addSparks(battery.x + battery.w / 2, bobY + battery.h / 2, '#ffd95a', 16);
           }
