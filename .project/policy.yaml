@@ -1,0 +1,61 @@
+project:
+  id: "side-scroller-game"
+  name: "Side Scroller Game"
+  repo: "Garrin-Project-Labs/project-side-scroller-game"
+  sourceOfTruth: discord
+
+owner:
+  discordUserId: "222914128463921152"
+  label: "ClickG"
+
+discord:
+  guildId: "1515020347425030245"
+  channelId: "1517753801594114049"
+  visibility: "public"
+  projectsCategoryId: "1516195966330343444"
+  projectCreationChannelId: "1516196374620799127"
+  roles:
+    viewer:
+      roleId: "1517753794098761978"
+      name: "side-scroller-game-viewer"
+    contributor:
+      roleId: "1517753795453386865"
+      name: "side-scroller-game-contributor"
+    maintainer:
+      roleId: "1517753798448255026"
+      name: "side-scroller-game-maintainer"
+
+authorization:
+  allowViewerQuestions: true
+  allowContributorsToClaimTasks: true
+  requireMaintainerForPlanApproval: true
+  requireMaintainerForDocsAndMemory: true
+  requireOwnerForInvites: false
+  requireOwnerForRepoCreation: true
+  requireOwnerForArchiveDelete: true
+  requireGlobalOwnerForGatewayConfig: true
+
+publishing:
+  githubPages: true
+  githubPagesStatus: "pending"
+  githubPagesUrl: "https://garrin-project-labs.github.io/project-side-scroller-game/"
+  githubPagesSource: "main:/docs"
+  publicDemos: true
+
+workflow:
+  taskThreads: automatic
+  taskCommandStyle: natural_language
+  friendlyTaskName: quest
+  requireMention: true
+  jamMode: temporary_ambient
+  branchNaming: "task/<id>-<slug>"
+  requirePlanApproval: true
+  requireMaintainerForDocsAndMemory: true
+  allowBotMergeWithMaintainerApproval: true
+  githubIssues: false
+
+audit:
+  level: medium
+  path: ".project/audit/events.jsonl"
+  includePrLinks: true
+  includeDiscordThreadLinks: true
