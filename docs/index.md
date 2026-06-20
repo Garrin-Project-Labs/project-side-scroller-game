@@ -277,7 +277,7 @@
       const kind = obstaclePattern[obstaclePatternIndex % obstaclePattern.length];
       obstaclePatternIndex++;
       if (kind === 'water') {
-        const width = waterWidths[obstaclePatternIndex % waterWidths.length];
+        const width = obstaclePatternIndex === 1 ? 48 : waterWidths[obstaclePatternIndex % waterWidths.length];
         obstacles.push({ x: W + 30, y: groundY - 2, w: width, h: 54, kind: 'water' });
       } else if (kind === 'box') {
         const height = boxHeights[obstaclePatternIndex % boxHeights.length];
