@@ -213,8 +213,8 @@
       batteries = 0;
       gameOver = false;
       tick = 0;
-      spawnTimer = 75;
-      batteryTimer = 45;
+      spawnTimer = 112;
+      batteryTimer = 90;
       obstacles = [];
       pickups = [];
       sparks = [];
@@ -268,13 +268,13 @@
     function spawnWater() {
       const width = 70 + Math.random() * 70;
       obstacles.push({ x: W + 30, y: groundY - 4, w: width, h: 26, kind: 'water' });
-      spawnTimer = Math.max(66, 126 - speed * 5 + Math.random() * 66);
+      spawnTimer = Math.max(99, 189 - speed * 7.5 + Math.random() * 99);
     }
 
     function spawnBattery() {
       const high = Math.random() > 0.5;
       pickups.push({ x: W + 40, y: high ? groundY - 168 : groundY - 112, w: 34, h: 50, bob: Math.random() * 10 });
-      batteryTimer = 70 + Math.random() * 90;
+      batteryTimer = 140 + Math.random() * 180;
     }
 
     function rectsOverlap(a, b) {
@@ -359,6 +359,7 @@
           if (rectsOverlap(hit, { ...battery, y: bobY })) {
             battery.collected = true;
             batteries++;
+            speed = Math.min(8.8, speed * 1.02);
             score += 60;
             addSparks(battery.x + battery.w / 2, bobY + battery.h / 2, '#ffd95a', 16);
           }
