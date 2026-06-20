@@ -171,10 +171,10 @@
     const H = canvas.height;
     const groundY = 430;
     const gravity = 0.54;
-    const jumpPower = -12.4;
+    const jumpPower = -8.4;
     const maxJumpHeight = 168;
     const maxHeldJumpFrames = 60;
-    const heldJumpGravityScale = 0.12;
+    const heldJumpRiseSpeed = -3.4;
 
     let best = Number(localStorage.getItem('robotBatteryRunnerBest') || 0);
     bestEl.textContent = best;
@@ -305,11 +305,13 @@
         if (batteryTimer <= 0) spawnBattery();
       }
 
-      const extendingJump = !robot.grounded && jumpHeld && heldJumpFrames > 0;
-      if (extendingJump) heldJumpFrames--;
+      const extendingJump = !robot.grounded && jumpHeld && heldJumpFrames > 0 && robot.vy < 0;
+      if (extendingJump) {
+        heldJumpFrames--;
+        robot.vy = Math.max(robot.vy, heldJumpRiseSpeed);
+      }
 
-      const jumpGravity = extendingJump ? gravity * heldJumpGravityScale : gravity;
-      robot.vy += jumpGravity;
+      robot.vy += gravity;
       robot.y += robot.vy;
 
       const highestJumpY = groundY - robot.h - maxJumpHeight;
