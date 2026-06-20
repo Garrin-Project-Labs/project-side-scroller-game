@@ -49,6 +49,13 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     super('runner');
   }
 
+  preload() {
+    this.load.svg('robot', 'src/assets/robot.svg', { width: 128, height: 188 });
+    this.load.svg('battery', 'src/assets/battery.svg', { width: 136, height: 200 });
+    this.load.svg('crate', 'src/assets/crate.svg', { width: 176, height: 176 });
+    this.load.svg('platform', 'src/assets/platform.svg', { width: 880, height: 248 });
+  }
+
   create() {
     this.best = Number(localStorage.getItem('robotBatteryRunnerBest') || 0);
     this.keys = this.input.keyboard.addKeys('SPACE,UP,R');
@@ -64,6 +71,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.world = this.add.graphics();
     this.effects = this.add.graphics();
     this.hud = this.add.graphics();
+    this.robotSprite = this.add.image(ROBOT_X, GROUND_Y - ROBOT_H, 'robot').setOrigin(0, 0).setDisplaySize(ROBOT_W, ROBOT_H).setDepth(8);
     this.hudText = this.add.text(18, 16, '', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '22px',
@@ -106,6 +114,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   resetRun() {
+    this.clearDynamicObjects();
     this.robot = {
       x: ROBOT_X,
       y: GROUND_Y - ROBOT_H,
@@ -135,6 +144,14 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     ];
     this.gameOverText.setText('');
     this.restartText.setText('');
+    this.robotSprite.setPosition(this.robot.x, this.robot.y).setRotation(0);
+  }
+
+  clearDynamicObjects() {
+    for (const item of [...(this.obstacles ?? []), ...(this.pickups ?? [])]) item.sprite?.destroy();
+    this.obstacles = [];
+    this.pickups = [];
+    this.sparks = [];
   }
 
   startJump() {
@@ -223,23 +240,32 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       this.obstacles.push({ x: W + 30, y: GROUND_Y - 2, w, h: 54, kind: 'water' });
     } else if (kind === 'box') {
       const h = BOX_HEIGHTS[this.obstaclePatternIndex % BOX_HEIGHTS.length];
-      this.obstacles.push({ x: W + 30, y: GROUND_Y - h, w: 48, h, kind: 'box' });
+      this.obstacles.push(this.makeTexturedObstacle('box', W + 30, GROUND_Y - h, 48, h));
     } else if (kind === 'stackedBox') {
       const stackH = BOX_SIZE * 2;
       const nearPlatform = this.obstacles.some(o => o.kind === 'platform' && o.x > W - 260);
-      if (nearPlatform || Math.random() < 0.45) this.obstacles.push({ x: W + 30, y: GROUND_Y - stackH, w: BOX_SIZE, h: stackH, kind: 'stackedBox' });
-      else this.obstacles.push({ x: W + 30, y: GROUND_Y - BOX_SIZE, w: BOX_SIZE, h: BOX_SIZE, kind: 'box' });
+      if (nearPlatform || Math.random() < 0.45) this.obstacles.push(this.makeTexturedObstacle('stackedBox', W + 30, GROUND_Y - stackH, BOX_SIZE, stackH));
+      else this.obstacles.push(this.makeTexturedObstacle('box', W + 30, GROUND_Y - BOX_SIZE, BOX_SIZE, BOX_SIZE));
     } else {
-      this.obstacles.push({ x: W + 30, y: GROUND_Y - 62, w: 220, h: 62, kind: 'platform' });
+      this.obstacles.push(this.makeTexturedObstacle('platform', W + 30, GROUND_Y - 62, 220, 62));
     }
 
     const patternOffset = this.obstaclePatternIndex % 3 === 0 ? 90 : 0;
     this.spawnTimer = Math.round((OBSTACLE_GAP_PIXELS + patternOffset) / this.speed);
   }
 
+  makeTexturedObstacle(kind, x, y, w, h) {
+    const texture = kind === 'platform' ? 'platform' : 'crate';
+    const sprite = this.add.image(x, y, texture).setOrigin(0, 0).setDisplaySize(w, h).setDepth(kind === 'platform' ? 3 : 4);
+    return { x, y, w, h, kind, sprite };
+  }
+
   spawnNextBattery() {
     const high = this.obstaclePatternIndex % 2 === 0;
-    this.pickups.push({ x: W + 40, y: high ? GROUND_Y - 168 : GROUND_Y - 112, w: 34, h: 50, bob: Math.random() * 10, collected: false });
+    const x = W + 40;
+    const y = high ? GROUND_Y - 168 : GROUND_Y - 112;
+    const sprite = this.add.image(x, y, 'battery').setOrigin(0, 0).setDisplaySize(34, 50).setDepth(5);
+    this.pickups.push({ x, y, w: 34, h: 50, bob: Math.random() * 10, collected: false, sprite });
     this.batteryTimer = Math.round(BATTERY_GAP_PIXELS / this.speed);
   }
 
@@ -248,10 +274,14 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       c.x -= this.speed * 0.09 * c.s;
       if (c.x < -130) c.x = W + 120;
     }
-    for (const o of this.obstacles) o.x -= this.gameOver ? this.speed * 0.2 : this.speed;
+    for (const o of this.obstacles) {
+      o.x -= this.gameOver ? this.speed * 0.2 : this.speed;
+      o.sprite?.setPosition(o.x, o.y);
+    }
     for (const p of this.pickups) {
       p.x -= this.gameOver ? this.speed * 0.2 : this.speed;
       p.bob += 0.08;
+      p.sprite?.setPosition(p.x, p.y + Math.sin(p.bob) * 8);
     }
     for (const s of this.sparks) {
       s.x += s.vx;
@@ -262,8 +292,16 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   removeOffscreenObjects() {
-    this.obstacles = this.obstacles.filter(o => o.x + o.w > -40);
-    this.pickups = this.pickups.filter(p => p.x + p.w > -40 && !p.collected);
+    this.obstacles = this.obstacles.filter(o => {
+      if (o.x + o.w > -40) return true;
+      o.sprite?.destroy();
+      return false;
+    });
+    this.pickups = this.pickups.filter(p => {
+      if (p.x + p.w > -40 && !p.collected) return true;
+      p.sprite?.destroy();
+      return false;
+    });
     this.sparks = this.sparks.filter(s => s.life > 0);
   }
 
@@ -283,6 +321,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       const y = p.y + Math.sin(p.bob) * 8;
       if (this.overlap(hit, { ...p, y })) {
         p.collected = true;
+        p.sprite?.destroy();
         this.batteries++;
         this.score += 60;
         this.addSparks(p.x + p.w / 2, y + p.h / 2, 0xffd95a, 16);
@@ -320,7 +359,6 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.hud.clear();
 
     this.drawBackground();
-    for (const p of this.pickups) this.drawBattery(p);
     for (const o of this.obstacles) this.drawObstacle(o);
     this.drawRobot();
     this.drawSparks();
@@ -350,37 +388,15 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   drawRobot() {
-    const r = this.robot;
-    const g = this.world;
-    const wobble = this.gameOver ? Math.sin(this.tick * 0.28) * 4 : 0;
-    const x = r.x + wobble;
-    const y = r.y;
-    g.fillStyle(0xb9d4e9, 1);
-    g.fillRoundedRect(x + 10, y + 20, 38, 42, 10);
-    g.fillStyle(0xdff8ff, 1);
-    g.fillRoundedRect(x + 5, y, 48, 34, 11);
-    g.fillStyle(0x112033, 1);
-    g.fillRoundedRect(x + 13, y + 9, 32, 14, 7);
-    g.fillStyle(r.blink < 6 ? 0x112033 : 0x64f4ff, 1);
-    g.fillCircle(x + 23, y + 16, 3.5);
-    g.fillCircle(x + 36, y + 16, 3.5);
-    g.lineStyle(4, 0x64f4ff, 1);
-    g.lineBetween(x + 29, y, x + 29, y - 11);
-    g.fillStyle(0xffd95a, 1);
-    g.fillCircle(x + 29, y - 14, 5);
-    const leg = r.grounded ? Math.sin(this.tick * 0.32) * 7 : -4;
-    g.lineStyle(8, 0xdff8ff, 1);
-    g.lineBetween(x + 18, y + 60, x + 14 + leg, y + 76);
-    g.lineBetween(x + 40, y + 60, x + 44 - leg, y + 76);
-    g.lineStyle(8, 0x9fd8ff, 1);
-    g.lineBetween(x + 10, y + 32, x, y + 46 + Math.sin(this.tick * 0.25) * 4);
-    g.lineBetween(x + 48, y + 32, x + 58, y + 46 - Math.sin(this.tick * 0.25) * 4);
+    const wobble = this.gameOver ? Math.sin(this.tick * 0.28) * 0.08 : 0;
+    this.robotSprite
+      .setPosition(this.robot.x, this.robot.y)
+      .setRotation(wobble)
+      .setAlpha(this.gameOver ? 0.88 : 1);
   }
 
   drawObstacle(o) {
     if (o.kind === 'water') return this.drawWater(o);
-    if (o.kind === 'platform') return this.drawPlatform(o);
-    return this.drawBox(o);
   }
 
   drawWater(o) {
@@ -416,64 +432,6 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     g.lineBetween(o.x + o.w - 10, o.y + 1, o.x + o.w + 4, o.y + 1);
   }
 
-  drawBox(o) {
-    const g = this.world;
-    const count = o.kind === 'stackedBox' ? 2 : 1;
-    const blockH = o.h / count;
-    for (let i = 0; i < count; i++) {
-      const y = o.y + i * blockH;
-      g.fillGradientStyle(0xd9a04f, 0xd9a04f, 0x8a5328, 0x8a5328, 1);
-      g.fillRoundedRect(o.x, y, o.w, blockH, 6);
-      g.lineStyle(4, 0x5b351c, 1);
-      g.strokeRoundedRect(o.x + 2, y + 2, o.w - 4, blockH - 4, 5);
-      g.lineStyle(3, 0xffffff, 0.26);
-      g.lineBetween(o.x + 10, y + 12, o.x + o.w - 10, y + blockH - 10);
-      g.lineBetween(o.x + o.w - 10, y + 12, o.x + 10, y + blockH - 10);
-    }
-  }
-
-  drawPlatform(o) {
-    const g = this.world;
-    const corner = 24;
-    g.fillStyle(0x17283f, 1);
-    g.beginPath();
-    g.moveTo(o.x, o.y + o.h);
-    g.lineTo(o.x, o.y + corner);
-    g.lineTo(o.x + corner, o.y + 8);
-    g.lineTo(o.x + o.w - corner, o.y + 8);
-    g.lineTo(o.x + o.w, o.y + corner);
-    g.lineTo(o.x + o.w, o.y + o.h);
-    g.closePath();
-    g.fillPath();
-    g.fillGradientStyle(0x68ffc7, 0x68ffc7, 0x2bdf9f, 0x2bdf9f, 1);
-    g.beginPath();
-    g.moveTo(o.x, o.y + corner);
-    g.lineTo(o.x + 26, o.y);
-    g.lineTo(o.x + o.w - 26, o.y);
-    g.lineTo(o.x + o.w, o.y + corner);
-    g.lineTo(o.x + o.w, o.y + 28);
-    g.lineTo(o.x, o.y + 28);
-    g.closePath();
-    g.fillPath();
-    g.fillStyle(0xffffff, 0.12);
-    for (let x = o.x + 18; x < o.x + o.w - 20; x += 38) g.fillRect(x, o.y + 38, 22, 5);
-  }
-
-  drawBattery(p) {
-    if (p.collected) return;
-    const y = p.y + Math.sin(p.bob) * 8;
-    const g = this.world;
-    g.fillStyle(0x273142, 1);
-    g.fillRoundedRect(p.x, y + 6, p.w, p.h - 6, 7);
-    g.fillStyle(0xffd95a, 1);
-    g.fillRoundedRect(p.x + 7, y + 13, p.w - 14, p.h - 20, 5);
-    g.fillStyle(0x7dff8a, 1);
-    g.fillRect(p.x + 11, y + 20, p.w - 22, 8);
-    g.fillRect(p.x + 11, y + 32, p.w - 22, 8);
-    g.fillStyle(0xe8f3ff, 1);
-    g.fillRoundedRect(p.x + 10, y, p.w - 20, 8, 3);
-  }
-
   drawSparks() {
     for (const s of this.sparks) {
       this.effects.fillStyle(s.color, Math.max(0, s.life / 36));
@@ -503,6 +461,11 @@ if (window.Phaser) {
     width: W,
     height: H,
     backgroundColor: '#102039',
+    render: {
+      antialias: true,
+      pixelArt: false,
+      roundPixels: false
+    },
     scale: {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH
