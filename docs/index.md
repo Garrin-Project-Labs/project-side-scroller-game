@@ -175,9 +175,11 @@
     const maxJumpHeight = 168;
     const maxHeldJumpFrames = 60;
     const heldJumpGravityScale = 0.12;
-    const waterGapPixels = 650;
+    const obstacleGapPixels = 650;
     const batteryGapPixels = 1120;
     const waterWidths = [78, 96, 84, 116, 88];
+    const boxHeights = [38, 46, 34];
+    const obstaclePattern = ['water', 'box', 'platform', 'water', 'box', 'water', 'platform'];
 
     let best = Number(localStorage.getItem('robotBatteryRunnerBest') || 0);
     bestEl.textContent = best;
@@ -203,7 +205,7 @@
     let pickups;
     let clouds;
     let sparks;
-    let waterPatternIndex;
+    let obstaclePatternIndex;
     let jumpHeld;
     let heldJumpFrames;
 
@@ -222,7 +224,7 @@
       obstacles = [];
       pickups = [];
       sparks = [];
-      waterPatternIndex = 0;
+      obstaclePatternIndex = 0;
       jumpHeld = false;
       heldJumpFrames = 0;
       clouds = [
@@ -270,16 +272,24 @@
       }
     }
 
-    function spawnWater() {
-      const width = waterWidths[waterPatternIndex % waterWidths.length];
-      waterPatternIndex++;
-      obstacles.push({ x: W + 30, y: groundY - 2, w: width, h: 54, kind: 'water' });
-      const patternOffset = waterPatternIndex % 3 === 0 ? 90 : 0;
-      spawnTimer = Math.round((waterGapPixels + patternOffset) / speed);
+    function spawnObstacle() {
+      const kind = obstaclePattern[obstaclePatternIndex % obstaclePattern.length];
+      obstaclePatternIndex++;
+      if (kind === 'water') {
+        const width = waterWidths[obstaclePatternIndex % waterWidths.length];
+        obstacles.push({ x: W + 30, y: groundY - 2, w: width, h: 54, kind: 'water' });
+      } else if (kind === 'box') {
+        const height = boxHeights[obstaclePatternIndex % boxHeights.length];
+        obstacles.push({ x: W + 30, y: groundY - height, w: 48, h: height, kind: 'box' });
+      } else {
+        obstacles.push({ x: W + 30, y: groundY - 54, w: 150, h: 54, kind: 'platform' });
+      }
+      const patternOffset = obstaclePatternIndex % 3 === 0 ? 90 : 0;
+      spawnTimer = Math.round((obstacleGapPixels + patternOffset) / speed);
     }
 
     function spawnBattery() {
-      const high = waterPatternIndex % 2 === 0;
+      const high = obstaclePatternIndex % 2 === 0;
       pickups.push({ x: W + 40, y: high ? groundY - 168 : groundY - 112, w: 34, h: 50, bob: Math.random() * 10 });
       batteryTimer = Math.round(batteryGapPixels / speed);
     }
@@ -304,17 +314,18 @@
     function update() {
       tick++;
       if (!gameOver) {
-        speed = Math.min(8.8, speed + 0.00075 + tick * 0.000000025);
+        speed = Math.min(8.8, speed + 0.0005625 + tick * 0.00000001875);
         score += 0.09 * speed;
         spawnTimer--;
         batteryTimer--;
-        if (spawnTimer <= 0) spawnWater();
+        if (spawnTimer <= 0) spawnObstacle();
         if (batteryTimer <= 0) spawnBattery();
       }
 
       const extendingJump = !robot.grounded && jumpHeld && heldJumpFrames > 0;
       if (extendingJump) heldJumpFrames--;
 
+      const previousY = robot.y;
       const jumpGravity = extendingJump ? gravity * heldJumpGravityScale : gravity;
       robot.vy += jumpGravity;
       robot.y += robot.vy;
@@ -324,11 +335,26 @@
         robot.y = highestJumpY;
         robot.vy = Math.max(0, robot.vy);
       }
-      if (robot.y >= groundY - robot.h) {
+      let landedOnSurface = false;
+      for (const obstacle of obstacles) {
+        if (obstacle.kind !== 'platform') continue;
+        const wasAbove = previousY + robot.h <= obstacle.y + 8;
+        const overlapsX = robot.x + robot.w - 8 > obstacle.x && robot.x + 8 < obstacle.x + obstacle.w;
+        if (robot.vy >= 0 && wasAbove && overlapsX && robot.y + robot.h >= obstacle.y) {
+          robot.y = obstacle.y - robot.h;
+          robot.vy = 0;
+          robot.grounded = true;
+          landedOnSurface = true;
+          break;
+        }
+      }
+      if (!landedOnSurface && robot.y >= groundY - robot.h) {
         robot.y = groundY - robot.h;
         robot.vy = 0;
         robot.grounded = true;
+        landedOnSurface = true;
       }
+      if (!landedOnSurface) robot.grounded = false;
       robot.blink = (robot.blink + 1) % 120;
 
       clouds.forEach(cloud => {
@@ -355,8 +381,12 @@
 
       if (!gameOver) {
         const hit = robotHitbox();
-        for (const water of obstacles) {
+        for (const water of obstacles.filter(obstacle => obstacle.kind === 'water')) {
           const danger = { x: water.x + 5, y: water.y - 5, w: water.w - 10, h: water.h + 10 };
+          if (rectsOverlap(hit, danger)) splash();
+        }
+        for (const box of obstacles.filter(obstacle => obstacle.kind === 'box')) {
+          const danger = { x: box.x + 4, y: box.y + 4, w: box.w - 8, h: box.h - 4 };
           if (rectsOverlap(hit, danger)) splash();
         }
         for (const battery of pickups) {
@@ -446,6 +476,45 @@
     }
 
     function drawWater(water) {
+      if (water.kind === 'box') {
+        ctx.save();
+        ctx.translate(water.x, water.y);
+        const grad = ctx.createLinearGradient(0, 0, 0, water.h);
+        grad.addColorStop(0, '#d9a04f');
+        grad.addColorStop(1, '#8a5328');
+        ctx.fillStyle = grad;
+        roundRect(0, 0, water.w, water.h, 6, true);
+        ctx.strokeStyle = '#5b351c';
+        ctx.lineWidth = 4;
+        roundRect(2, 2, water.w - 4, water.h - 4, 5, false);
+        ctx.strokeStyle = 'rgba(255,255,255,0.26)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(10, 12);
+        ctx.lineTo(water.w - 10, water.h - 10);
+        ctx.moveTo(water.w - 10, 12);
+        ctx.lineTo(10, water.h - 10);
+        ctx.stroke();
+        ctx.restore();
+        return;
+      }
+
+      if (water.kind === 'platform') {
+        ctx.save();
+        ctx.translate(water.x, water.y);
+        ctx.fillStyle = '#17283f';
+        roundRect(0, 0, water.w, water.h, 10, true);
+        ctx.fillStyle = '#2bdf9f';
+        roundRect(0, 0, water.w, 12, 8, true);
+        ctx.fillStyle = 'rgba(255,255,255,0.12)';
+        for (let x = 12; x < water.w - 20; x += 34) ctx.fillRect(x, 24, 20, 5);
+        ctx.strokeStyle = 'rgba(100,244,255,0.25)';
+        ctx.lineWidth = 3;
+        roundRect(2, 2, water.w - 4, water.h - 4, 10, false);
+        ctx.restore();
+        return;
+      }
+
       ctx.save();
       ctx.translate(water.x, water.y);
 
