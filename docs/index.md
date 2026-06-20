@@ -172,6 +172,8 @@
     const groundY = 430;
     const gravity = 0.62;
     const jumpPower = -15.2;
+    const maxHeldJumpFrames = 30;
+    const heldJumpBoost = 0.42;
 
     let best = Number(localStorage.getItem('robotBatteryRunnerBest') || 0);
     bestEl.textContent = best;
@@ -197,6 +199,8 @@
     let pickups;
     let clouds;
     let sparks;
+    let jumpHeld;
+    let heldJumpFrames;
 
     function reset() {
       robot.y = groundY - robot.h;
@@ -213,6 +217,8 @@
       obstacles = [];
       pickups = [];
       sparks = [];
+      jumpHeld = false;
+      heldJumpFrames = 0;
       clouds = [
         { x: 90, y: 80, s: 0.45 },
         { x: 390, y: 60, s: 0.7 },
@@ -227,7 +233,8 @@
       bestEl.textContent = best;
     }
 
-    function jump() {
+    function startJump() {
+      jumpHeld = true;
       if (gameOver) {
         reset();
         return;
@@ -235,7 +242,13 @@
       if (!robot.grounded) return;
       robot.vy = jumpPower;
       robot.grounded = false;
+      heldJumpFrames = maxHeldJumpFrames;
       addSparks(robot.x + 12, groundY - 8, '#64f4ff', 8);
+    }
+
+    function stopJump() {
+      jumpHeld = false;
+      heldJumpFrames = 0;
     }
 
     function addSparks(x, y, color, count = 10) {
@@ -289,6 +302,11 @@
         batteryTimer--;
         if (spawnTimer <= 0) spawnWater();
         if (batteryTimer <= 0) spawnBattery();
+      }
+
+      if (!robot.grounded && jumpHeld && heldJumpFrames > 0 && robot.vy < 0) {
+        robot.vy -= heldJumpBoost;
+        heldJumpFrames--;
       }
 
       robot.vy += gravity;
@@ -524,11 +542,16 @@
     addEventListener('keydown', (event) => {
       if (event.code === 'Space' || event.code === 'ArrowUp') {
         event.preventDefault();
-        jump();
+        if (!event.repeat) startJump();
       }
       if (event.code === 'KeyR' && gameOver) reset();
     });
-    canvas.addEventListener('pointerdown', jump);
+    addEventListener('keyup', (event) => {
+      if (event.code === 'Space' || event.code === 'ArrowUp') stopJump();
+    });
+    canvas.addEventListener('pointerdown', startJump);
+    addEventListener('pointerup', stopJump);
+    addEventListener('pointercancel', stopJump);
 
     reset();
     loop();
