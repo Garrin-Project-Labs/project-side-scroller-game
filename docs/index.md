@@ -143,7 +143,7 @@
     <section class="topbar" aria-label="Game header">
       <div>
         <h1>🤖 Robot Battery Runner</h1>
-        <p class="hint">Jump the water, grab batteries, and keep your robot charged.</p>
+        <p class="hint">Jump the water pits, grab batteries, and keep your robot charged.</p>
       </div>
       <div class="stats" aria-label="Score board">
         <div class="stat"><span>Score</span><strong id="score">0</strong></div>
@@ -212,7 +212,7 @@
       robot.vy = 0;
       robot.grounded = true;
       robot.blink = 0;
-      speed = 2.55;
+      speed = 1.28;
       score = 0;
       batteries = 0;
       gameOver = false;
@@ -273,7 +273,7 @@
     function spawnWater() {
       const width = waterWidths[waterPatternIndex % waterWidths.length];
       waterPatternIndex++;
-      obstacles.push({ x: W + 30, y: groundY - 4, w: width, h: 26, kind: 'water' });
+      obstacles.push({ x: W + 30, y: groundY - 2, w: width, h: 54, kind: 'water' });
       const patternOffset = waterPatternIndex % 3 === 0 ? 90 : 0;
       spawnTimer = Math.round((waterGapPixels + patternOffset) / speed);
     }
@@ -449,20 +449,44 @@
     function drawWater(water) {
       ctx.save();
       ctx.translate(water.x, water.y);
-      const grad = ctx.createLinearGradient(0, -8, 0, water.h);
+
+      ctx.fillStyle = '#07101d';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(water.w, 0);
+      ctx.lineTo(water.w - 12, water.h);
+      ctx.lineTo(12, water.h);
+      ctx.closePath();
+      ctx.fill();
+
+      const grad = ctx.createLinearGradient(0, 4, 0, water.h);
       grad.addColorStop(0, '#83f5ff');
-      grad.addColorStop(1, '#286cff');
+      grad.addColorStop(1, '#174dc8');
       ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.ellipse(water.w / 2, 13, water.w / 2, 16, 0, 0, Math.PI * 2);
+      ctx.moveTo(10, 16);
+      ctx.lineTo(water.w - 10, 16);
+      ctx.lineTo(water.w - 20, water.h - 6);
+      ctx.lineTo(20, water.h - 6);
+      ctx.closePath();
       ctx.fill();
+
       ctx.strokeStyle = 'rgba(220, 255, 255, 0.9)';
       ctx.lineWidth = 4;
       ctx.beginPath();
-      for (let x = 8; x < water.w - 6; x += 18) {
-        ctx.moveTo(x, 4 + Math.sin((tick + x) * 0.12) * 4);
-        ctx.quadraticCurveTo(x + 8, -3, x + 16, 4 + Math.sin((tick + x + 16) * 0.12) * 4);
+      for (let x = 14; x < water.w - 20; x += 18) {
+        ctx.moveTo(x, 14 + Math.sin((tick + x) * 0.12) * 3);
+        ctx.quadraticCurveTo(x + 8, 8, x + 16, 14 + Math.sin((tick + x + 16) * 0.12) * 3);
       }
+      ctx.stroke();
+
+      ctx.strokeStyle = '#2bdf9f';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(-4, 1);
+      ctx.lineTo(10, 1);
+      ctx.moveTo(water.w - 10, 1);
+      ctx.lineTo(water.w + 4, 1);
       ctx.stroke();
       ctx.restore();
     }
@@ -502,7 +526,7 @@
         ctx.fillStyle = 'white';
         ctx.font = '700 24px ui-rounded, system-ui';
         ctx.textAlign = 'center';
-        ctx.fillText('Collect batteries. Jump over water!', W / 2, 65);
+        ctx.fillText('Collect batteries. Jump over water pits!', W / 2, 65);
         ctx.fillStyle = '#bfd6f3';
         ctx.font = '16px ui-rounded, system-ui';
         ctx.fillText('Space / ↑ / click = jump', W / 2, 91);
