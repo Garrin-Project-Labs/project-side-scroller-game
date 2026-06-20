@@ -3,7 +3,7 @@
 This public Project Space has GitHub Pages enabled from `main:/docs`.
 
 - URL: https://garrin-project-labs.github.io/project-side-scroller-game/
-- Source: `docs/index.md`
+- Source: `docs/index.html`
 - First deployment can take a minute after project creation.
 
 Keep secrets out of this project: Pages publishes public content.
