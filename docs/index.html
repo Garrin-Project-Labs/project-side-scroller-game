@@ -414,7 +414,8 @@
           const sy = o.y + 14 + Math.sin((this.tick + x) * 0.12) * 3;
           const ey = o.y + 14 + Math.sin((this.tick + x + 16) * 0.12) * 3;
           g.moveTo(o.x + x, sy);
-          g.quadraticBezierTo(o.x + x + 8, o.y + 8, o.x + x + 16, ey);
+          g.lineTo(o.x + x + 8, o.y + 8);
+          g.lineTo(o.x + x + 16, ey);
         }
         g.strokePath();
         g.lineStyle(6, 0x2bdf9f, 1);
@@ -440,22 +441,23 @@
 
       drawPlatform(o) {
         const g = this.world;
+        const corner = 24;
         g.fillStyle(0x17283f, 1);
         g.beginPath();
         g.moveTo(o.x, o.y + o.h);
-        g.lineTo(o.x, o.y + 30);
-        g.quadraticBezierTo(o.x, o.y + 8, o.x + 24, o.y + 8);
-        g.lineTo(o.x + o.w - 24, o.y + 8);
-        g.quadraticBezierTo(o.x + o.w, o.y + 8, o.x + o.w, o.y + 30);
+        g.lineTo(o.x, o.y + corner);
+        g.lineTo(o.x + corner, o.y + 8);
+        g.lineTo(o.x + o.w - corner, o.y + 8);
+        g.lineTo(o.x + o.w, o.y + corner);
         g.lineTo(o.x + o.w, o.y + o.h);
         g.closePath();
         g.fillPath();
         g.fillGradientStyle(0x68ffc7, 0x68ffc7, 0x2bdf9f, 0x2bdf9f, 1);
         g.beginPath();
-        g.moveTo(o.x, o.y + 24);
-        g.quadraticBezierTo(o.x, o.y, o.x + 26, o.y);
+        g.moveTo(o.x, o.y + corner);
+        g.lineTo(o.x + 26, o.y);
         g.lineTo(o.x + o.w - 26, o.y);
-        g.quadraticBezierTo(o.x + o.w, o.y, o.x + o.w, o.y + 24);
+        g.lineTo(o.x + o.w, o.y + corner);
         g.lineTo(o.x + o.w, o.y + 28);
         g.lineTo(o.x, o.y + 28);
         g.closePath();
