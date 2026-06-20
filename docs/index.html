@@ -335,7 +335,8 @@
       }
 
       drawBackground() {
-        this.bg.fillGradientStyle(0x17375e, 0x17375e, 0x244b74, 0x102039, 1).fillRect(0, 0, W, H);
+        this.bg.fillGradientStyle(0x17375e, 0x17375e, 0x244b74, 0x102039, 1);
+        this.bg.fillRect(0, 0, W, H);
         this.bg.fillStyle(0xffffff, 0.12);
         for (const c of this.clouds) {
           this.bg.fillCircle(c.x, c.y + 18, 28 * c.s);
@@ -344,10 +345,13 @@
         }
         this.bg.fillStyle(0x1c3558, 1);
         for (let x = -80 + ((this.tick * this.speed * 0.28) % 160); x < W + 200; x += 160) {
-          this.bg.fillRect(x, 266, 70, 164).fillRect(x + 20, 230, 32, 36);
+          this.bg.fillRect(x, 266, 70, 164);
+          this.bg.fillRect(x + 20, 230, 32, 36);
         }
-        this.world.fillStyle(0x17283f, 1).fillRect(0, GROUND_Y, W, H - GROUND_Y);
-        this.world.fillStyle(0x2bdf9f, 1).fillRect(0, GROUND_Y, W, 12);
+        this.world.fillStyle(0x17283f, 1);
+        this.world.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+        this.world.fillStyle(0x2bdf9f, 1);
+        this.world.fillRect(0, GROUND_Y, W, 12);
         this.world.fillStyle(0xffffff, 0.12);
         for (let x = -80 + ((this.tick * this.speed) % 80); x < W + 80; x += 80) this.world.fillRect(x, GROUND_Y + 18, 38, 6);
       }
@@ -358,15 +362,26 @@
         const wobble = this.gameOver ? Math.sin(this.tick * 0.28) * 4 : 0;
         const x = r.x + wobble;
         const y = r.y;
-        g.fillStyle(0xb9d4e9, 1).fillRoundedRect(x + 10, y + 20, 38, 42, 10);
-        g.fillStyle(0xdff8ff, 1).fillRoundedRect(x + 5, y, 48, 34, 11);
-        g.fillStyle(0x112033, 1).fillRoundedRect(x + 13, y + 9, 32, 14, 7);
-        g.fillStyle(r.blink < 6 ? 0x112033 : 0x64f4ff, 1).fillCircle(x + 23, y + 16, 3.5).fillCircle(x + 36, y + 16, 3.5);
-        g.lineStyle(4, 0x64f4ff, 1).lineBetween(x + 29, y, x + 29, y - 11);
-        g.fillStyle(0xffd95a, 1).fillCircle(x + 29, y - 14, 5);
+        g.fillStyle(0xb9d4e9, 1);
+        g.fillRoundedRect(x + 10, y + 20, 38, 42, 10);
+        g.fillStyle(0xdff8ff, 1);
+        g.fillRoundedRect(x + 5, y, 48, 34, 11);
+        g.fillStyle(0x112033, 1);
+        g.fillRoundedRect(x + 13, y + 9, 32, 14, 7);
+        g.fillStyle(r.blink < 6 ? 0x112033 : 0x64f4ff, 1);
+        g.fillCircle(x + 23, y + 16, 3.5);
+        g.fillCircle(x + 36, y + 16, 3.5);
+        g.lineStyle(4, 0x64f4ff, 1);
+        g.lineBetween(x + 29, y, x + 29, y - 11);
+        g.fillStyle(0xffd95a, 1);
+        g.fillCircle(x + 29, y - 14, 5);
         const leg = r.grounded ? Math.sin(this.tick * 0.32) * 7 : -4;
-        g.lineStyle(8, 0xdff8ff, 1).lineBetween(x + 18, y + 60, x + 14 + leg, y + 76).lineBetween(x + 40, y + 60, x + 44 - leg, y + 76);
-        g.lineStyle(8, 0x9fd8ff, 1).lineBetween(x + 10, y + 32, x, y + 46 + Math.sin(this.tick * 0.25) * 4).lineBetween(x + 48, y + 32, x + 58, y + 46 - Math.sin(this.tick * 0.25) * 4);
+        g.lineStyle(8, 0xdff8ff, 1);
+        g.lineBetween(x + 18, y + 60, x + 14 + leg, y + 76);
+        g.lineBetween(x + 40, y + 60, x + 44 - leg, y + 76);
+        g.lineStyle(8, 0x9fd8ff, 1);
+        g.lineBetween(x + 10, y + 32, x, y + 46 + Math.sin(this.tick * 0.25) * 4);
+        g.lineBetween(x + 48, y + 32, x + 58, y + 46 - Math.sin(this.tick * 0.25) * 4);
       }
 
       drawObstacle(o) {
@@ -379,19 +394,32 @@
         const g = this.world;
         g.fillStyle(0x07101d, 1);
         g.beginPath();
-        g.moveTo(o.x, o.y).lineTo(o.x + o.w, o.y).lineTo(o.x + o.w - 12, o.y + o.h).lineTo(o.x + 12, o.y + o.h).closePath().fillPath();
+        g.moveTo(o.x, o.y);
+        g.lineTo(o.x + o.w, o.y);
+        g.lineTo(o.x + o.w - 12, o.y + o.h);
+        g.lineTo(o.x + 12, o.y + o.h);
+        g.closePath();
+        g.fillPath();
         g.fillGradientStyle(0x83f5ff, 0x83f5ff, 0x174dc8, 0x174dc8, 1);
         g.beginPath();
-        g.moveTo(o.x + 10, o.y + 16).lineTo(o.x + o.w - 10, o.y + 16).lineTo(o.x + o.w - 20, o.y + o.h - 6).lineTo(o.x + 20, o.y + o.h - 6).closePath().fillPath();
+        g.moveTo(o.x + 10, o.y + 16);
+        g.lineTo(o.x + o.w - 10, o.y + 16);
+        g.lineTo(o.x + o.w - 20, o.y + o.h - 6);
+        g.lineTo(o.x + 20, o.y + o.h - 6);
+        g.closePath();
+        g.fillPath();
         g.lineStyle(4, 0xdcffff, 0.9);
         g.beginPath();
         for (let x = 14; x < o.w - 20; x += 18) {
           const sy = o.y + 14 + Math.sin((this.tick + x) * 0.12) * 3;
           const ey = o.y + 14 + Math.sin((this.tick + x + 16) * 0.12) * 3;
-          g.moveTo(o.x + x, sy).quadraticCurveTo(o.x + x + 8, o.y + 8, o.x + x + 16, ey);
+          g.moveTo(o.x + x, sy);
+          g.quadraticCurveTo(o.x + x + 8, o.y + 8, o.x + x + 16, ey);
         }
         g.strokePath();
-        g.lineStyle(6, 0x2bdf9f, 1).lineBetween(o.x - 4, o.y + 1, o.x + 10, o.y + 1).lineBetween(o.x + o.w - 10, o.y + 1, o.x + o.w + 4, o.y + 1);
+        g.lineStyle(6, 0x2bdf9f, 1);
+        g.lineBetween(o.x - 4, o.y + 1, o.x + 10, o.y + 1);
+        g.lineBetween(o.x + o.w - 10, o.y + 1, o.x + o.w + 4, o.y + 1);
       }
 
       drawBox(o) {
@@ -400,9 +428,13 @@
         const blockH = o.h / count;
         for (let i = 0; i < count; i++) {
           const y = o.y + i * blockH;
-          g.fillGradientStyle(0xd9a04f, 0xd9a04f, 0x8a5328, 0x8a5328, 1).fillRoundedRect(o.x, y, o.w, blockH, 6);
-          g.lineStyle(4, 0x5b351c, 1).strokeRoundedRect(o.x + 2, y + 2, o.w - 4, blockH - 4, 5);
-          g.lineStyle(3, 0xffffff, 0.26).lineBetween(o.x + 10, y + 12, o.x + o.w - 10, y + blockH - 10).lineBetween(o.x + o.w - 10, y + 12, o.x + 10, y + blockH - 10);
+          g.fillGradientStyle(0xd9a04f, 0xd9a04f, 0x8a5328, 0x8a5328, 1);
+          g.fillRoundedRect(o.x, y, o.w, blockH, 6);
+          g.lineStyle(4, 0x5b351c, 1);
+          g.strokeRoundedRect(o.x + 2, y + 2, o.w - 4, blockH - 4, 5);
+          g.lineStyle(3, 0xffffff, 0.26);
+          g.lineBetween(o.x + 10, y + 12, o.x + o.w - 10, y + blockH - 10);
+          g.lineBetween(o.x + o.w - 10, y + 12, o.x + 10, y + blockH - 10);
         }
       }
 
@@ -410,10 +442,24 @@
         const g = this.world;
         g.fillStyle(0x17283f, 1);
         g.beginPath();
-        g.moveTo(o.x, o.y + o.h).lineTo(o.x, o.y + 30).quadraticCurveTo(o.x, o.y + 8, o.x + 24, o.y + 8).lineTo(o.x + o.w - 24, o.y + 8).quadraticCurveTo(o.x + o.w, o.y + 8, o.x + o.w, o.y + 30).lineTo(o.x + o.w, o.y + o.h).closePath().fillPath();
+        g.moveTo(o.x, o.y + o.h);
+        g.lineTo(o.x, o.y + 30);
+        g.quadraticCurveTo(o.x, o.y + 8, o.x + 24, o.y + 8);
+        g.lineTo(o.x + o.w - 24, o.y + 8);
+        g.quadraticCurveTo(o.x + o.w, o.y + 8, o.x + o.w, o.y + 30);
+        g.lineTo(o.x + o.w, o.y + o.h);
+        g.closePath();
+        g.fillPath();
         g.fillGradientStyle(0x68ffc7, 0x68ffc7, 0x2bdf9f, 0x2bdf9f, 1);
         g.beginPath();
-        g.moveTo(o.x, o.y + 24).quadraticCurveTo(o.x, o.y, o.x + 26, o.y).lineTo(o.x + o.w - 26, o.y).quadraticCurveTo(o.x + o.w, o.y, o.x + o.w, o.y + 24).lineTo(o.x + o.w, o.y + 28).lineTo(o.x, o.y + 28).closePath().fillPath();
+        g.moveTo(o.x, o.y + 24);
+        g.quadraticCurveTo(o.x, o.y, o.x + 26, o.y);
+        g.lineTo(o.x + o.w - 26, o.y);
+        g.quadraticCurveTo(o.x + o.w, o.y, o.x + o.w, o.y + 24);
+        g.lineTo(o.x + o.w, o.y + 28);
+        g.lineTo(o.x, o.y + 28);
+        g.closePath();
+        g.fillPath();
         g.fillStyle(0xffffff, 0.12);
         for (let x = o.x + 18; x < o.x + o.w - 20; x += 38) g.fillRect(x, o.y + 38, 22, 5);
       }
@@ -422,14 +468,22 @@
         if (p.collected) return;
         const y = p.y + Math.sin(p.bob) * 8;
         const g = this.world;
-        g.fillStyle(0x273142, 1).fillRoundedRect(p.x, y + 6, p.w, p.h - 6, 7);
-        g.fillStyle(0xffd95a, 1).fillRoundedRect(p.x + 7, y + 13, p.w - 14, p.h - 20, 5);
-        g.fillStyle(0x7dff8a, 1).fillRect(p.x + 11, y + 20, p.w - 22, 8).fillRect(p.x + 11, y + 32, p.w - 22, 8);
-        g.fillStyle(0xe8f3ff, 1).fillRoundedRect(p.x + 10, y, p.w - 20, 8, 3);
+        g.fillStyle(0x273142, 1);
+        g.fillRoundedRect(p.x, y + 6, p.w, p.h - 6, 7);
+        g.fillStyle(0xffd95a, 1);
+        g.fillRoundedRect(p.x + 7, y + 13, p.w - 14, p.h - 20, 5);
+        g.fillStyle(0x7dff8a, 1);
+        g.fillRect(p.x + 11, y + 20, p.w - 22, 8);
+        g.fillRect(p.x + 11, y + 32, p.w - 22, 8);
+        g.fillStyle(0xe8f3ff, 1);
+        g.fillRoundedRect(p.x + 10, y, p.w - 20, 8, 3);
       }
 
       drawSparks() {
-        for (const s of this.sparks) this.effects.fillStyle(s.color, Math.max(0, s.life / 36)).fillCircle(s.x, s.y, 3.5);
+        for (const s of this.sparks) {
+          this.effects.fillStyle(s.color, Math.max(0, s.life / 36));
+          this.effects.fillCircle(s.x, s.y, 3.5);
+        }
       }
 
       drawHud() {
