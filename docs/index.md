@@ -179,7 +179,8 @@
     const batteryGapPixels = 1120;
     const waterWidths = [78, 96, 84, 116, 88];
     const boxHeights = [38, 46, 34];
-    const obstaclePattern = ['water', 'box', 'platform', 'water', 'box', 'water', 'platform'];
+    const boxSize = 44;
+    const obstaclePattern = ['water', 'box', 'platform', 'stackedBox', 'water', 'box', 'water', 'platform'];
 
     let best = Number(localStorage.getItem('robotBatteryRunnerBest') || 0);
     bestEl.textContent = best;
@@ -281,8 +282,16 @@
       } else if (kind === 'box') {
         const height = boxHeights[obstaclePatternIndex % boxHeights.length];
         obstacles.push({ x: W + 30, y: groundY - height, w: 48, h: height, kind: 'box' });
+      } else if (kind === 'stackedBox') {
+        const stackHeight = boxSize * 2;
+        const platformNearby = obstacles.some(obstacle => obstacle.kind === 'platform' && obstacle.x > W - 260);
+        if (platformNearby || Math.random() < 0.45) {
+          obstacles.push({ x: W + 30, y: groundY - stackHeight, w: boxSize, h: stackHeight, kind: 'stackedBox' });
+        } else {
+          obstacles.push({ x: W + 30, y: groundY - boxSize, w: boxSize, h: boxSize, kind: 'box' });
+        }
       } else {
-        obstacles.push({ x: W + 30, y: groundY - 54, w: 150, h: 54, kind: 'platform' });
+        obstacles.push({ x: W + 30, y: groundY - 62, w: 220, h: 62, kind: 'platform' });
       }
       const patternOffset = obstaclePatternIndex % 3 === 0 ? 90 : 0;
       spawnTimer = Math.round((obstacleGapPixels + patternOffset) / speed);
@@ -385,7 +394,7 @@
           const danger = { x: water.x + 5, y: water.y - 5, w: water.w - 10, h: water.h + 10 };
           if (rectsOverlap(hit, danger)) splash();
         }
-        for (const box of obstacles.filter(obstacle => obstacle.kind === 'box')) {
+        for (const box of obstacles.filter(obstacle => obstacle.kind === 'box' || obstacle.kind === 'stackedBox')) {
           const danger = { x: box.x + 4, y: box.y + 4, w: box.w - 8, h: box.h - 4 };
           if (rectsOverlap(hit, danger)) splash();
         }
@@ -476,25 +485,30 @@
     }
 
     function drawWater(water) {
-      if (water.kind === 'box') {
+      if (water.kind === 'box' || water.kind === 'stackedBox') {
         ctx.save();
         ctx.translate(water.x, water.y);
-        const grad = ctx.createLinearGradient(0, 0, 0, water.h);
-        grad.addColorStop(0, '#d9a04f');
-        grad.addColorStop(1, '#8a5328');
-        ctx.fillStyle = grad;
-        roundRect(0, 0, water.w, water.h, 6, true);
-        ctx.strokeStyle = '#5b351c';
-        ctx.lineWidth = 4;
-        roundRect(2, 2, water.w - 4, water.h - 4, 5, false);
-        ctx.strokeStyle = 'rgba(255,255,255,0.26)';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(10, 12);
-        ctx.lineTo(water.w - 10, water.h - 10);
-        ctx.moveTo(water.w - 10, 12);
-        ctx.lineTo(10, water.h - 10);
-        ctx.stroke();
+        const boxCount = water.kind === 'stackedBox' ? 2 : 1;
+        const blockH = water.h / boxCount;
+        for (let i = 0; i < boxCount; i++) {
+          const y = i * blockH;
+          const grad = ctx.createLinearGradient(0, y, 0, y + blockH);
+          grad.addColorStop(0, '#d9a04f');
+          grad.addColorStop(1, '#8a5328');
+          ctx.fillStyle = grad;
+          roundRect(0, y, water.w, blockH, 6, true);
+          ctx.strokeStyle = '#5b351c';
+          ctx.lineWidth = 4;
+          roundRect(2, y + 2, water.w - 4, blockH - 4, 5, false);
+          ctx.strokeStyle = 'rgba(255,255,255,0.26)';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(10, y + 12);
+          ctx.lineTo(water.w - 10, y + blockH - 10);
+          ctx.moveTo(water.w - 10, y + 12);
+          ctx.lineTo(10, y + blockH - 10);
+          ctx.stroke();
+        }
         ctx.restore();
         return;
       }
@@ -503,14 +517,42 @@
         ctx.save();
         ctx.translate(water.x, water.y);
         ctx.fillStyle = '#17283f';
-        roundRect(0, 0, water.w, water.h, 10, true);
-        ctx.fillStyle = '#2bdf9f';
-        roundRect(0, 0, water.w, 12, 8, true);
+        ctx.beginPath();
+        ctx.moveTo(0, water.h);
+        ctx.lineTo(0, 30);
+        ctx.quadraticCurveTo(0, 8, 24, 8);
+        ctx.lineTo(water.w - 24, 8);
+        ctx.quadraticCurveTo(water.w, 8, water.w, 30);
+        ctx.lineTo(water.w, water.h);
+        ctx.closePath();
+        ctx.fill();
+
+        const topGrad = ctx.createLinearGradient(0, 0, 0, 18);
+        topGrad.addColorStop(0, '#68ffc7');
+        topGrad.addColorStop(1, '#2bdf9f');
+        ctx.fillStyle = topGrad;
+        ctx.beginPath();
+        ctx.moveTo(0, 24);
+        ctx.quadraticCurveTo(0, 0, 26, 0);
+        ctx.lineTo(water.w - 26, 0);
+        ctx.quadraticCurveTo(water.w, 0, water.w, 24);
+        ctx.lineTo(water.w, 28);
+        ctx.lineTo(0, 28);
+        ctx.closePath();
+        ctx.fill();
+
         ctx.fillStyle = 'rgba(255,255,255,0.12)';
-        for (let x = 12; x < water.w - 20; x += 34) ctx.fillRect(x, 24, 20, 5);
+        for (let x = 18; x < water.w - 20; x += 38) ctx.fillRect(x, 38, 22, 5);
         ctx.strokeStyle = 'rgba(100,244,255,0.25)';
         ctx.lineWidth = 3;
-        roundRect(2, 2, water.w - 4, water.h - 4, 10, false);
+        ctx.beginPath();
+        ctx.moveTo(2, water.h - 2);
+        ctx.lineTo(2, 32);
+        ctx.quadraticCurveTo(2, 10, 24, 10);
+        ctx.lineTo(water.w - 24, 10);
+        ctx.quadraticCurveTo(water.w - 2, 10, water.w - 2, 32);
+        ctx.lineTo(water.w - 2, water.h - 2);
+        ctx.stroke();
         ctx.restore();
         return;
       }
