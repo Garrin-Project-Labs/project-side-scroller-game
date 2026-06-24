@@ -424,8 +424,6 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   drawNearTokyoStreetfront() {
     const segment = 260;
-    const stripWidth = segment * fronts.length;
-    const offset = (this.tick * this.speed * 0.34) % stripWidth;
     const fronts = [
       { top: 88, w: 248, face: 0x22133e, trim: 0x6ef7d2, accent: 0xff73d4, roof: 'flat' },
       { top: 126, w: 226, face: 0x17102f, trim: 0xff5fbf, accent: 0xffd36b, roof: 'antenna' },
@@ -437,6 +435,8 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       { top: 82, w: 250, face: 0x0f1f34, trim: 0x8d5cff, accent: 0xff73d4, roof: 'pipes' },
       { top: 118, w: 196, face: 0x2b183d, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' }
     ];
+    const stripWidth = segment * fronts.length;
+    const offset = (this.tick * this.speed * 0.34) % stripWidth;
 
     for (let repeat = -1; repeat <= 1; repeat++) {
       for (let i = 0; i < fronts.length; i++) {
