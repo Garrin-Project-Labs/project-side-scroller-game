@@ -425,21 +425,53 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   drawTokyoSigns() {
     for (const sign of this.tokyoSigns) {
-      const x = sign.x - ((this.tick * this.speed * 0.42) % (W + 180));
-      const wrappedX = x < -150 ? x + W + 180 : x;
+      const x = sign.x - ((this.tick * this.speed * 0.28) % (W + 180));
+      const wrappedX = x < -170 ? x + W + 180 : x;
       const pulse = 0.72 + Math.sin(this.tick * 0.08 + sign.x) * 0.18;
+      this.drawSignBuilding(sign, wrappedX);
       this.drawSignFrame(sign, wrappedX, pulse);
       this.positionSignLabels(sign, wrappedX, pulse);
     }
   }
 
+  drawSignBuilding(sign, x) {
+    const g = this.bg;
+    const buildingX = x - 18;
+    const buildingW = sign.w + (sign.style === 'ramen' ? 56 : 36);
+    const roofY = Math.max(92, sign.y - 34);
+    const faceBottom = GROUND_Y + 8;
+
+    g.fillStyle(0x120b28, 0.96);
+    g.fillRect(buildingX, roofY, buildingW, faceBottom - roofY);
+    g.fillStyle(0x0a0716, 0.8);
+    g.fillRect(buildingX + buildingW - 12, roofY + 8, 12, faceBottom - roofY - 8);
+    g.fillStyle(0x241542, 0.9);
+    g.fillRect(buildingX + 6, roofY + 8, buildingW - 24, faceBottom - roofY - 8);
+
+    g.lineStyle(3, 0x6ef7d2, 0.2);
+    g.lineBetween(buildingX + 8, roofY + 10, buildingX + buildingW - 18, roofY + 10);
+    g.lineStyle(2, 0xff73d4, 0.18);
+    g.lineBetween(buildingX + 10, faceBottom - 18, buildingX + buildingW - 20, faceBottom - 18);
+
+    for (let wy = roofY + 22; wy < faceBottom - 24; wy += 24) {
+      for (let wx = buildingX + 16; wx < buildingX + buildingW - 26; wx += 24) {
+        const lit = ((Math.floor(wx + wy) + this.tick) % 5) !== 0;
+        g.fillStyle(lit ? 0x6ef7d2 : 0x090719, lit ? 0.28 : 0.7);
+        g.fillRect(wx, wy, 9, 10);
+      }
+    }
+
+    const railY = sign.y + sign.h / 2;
+    g.lineStyle(5, 0x090719, 0.9);
+    g.lineBetween(buildingX + 8, railY - 18, x + 4, railY - 18);
+    g.lineBetween(buildingX + 8, railY + 18, x + 4, railY + 18);
+    g.lineStyle(2, 0xffffff, 0.25);
+    g.lineBetween(buildingX + 8, railY - 18, x + 4, railY - 18);
+    g.lineBetween(buildingX + 8, railY + 18, x + 4, railY + 18);
+  }
+
   drawSignFrame(sign, x, pulse) {
     const g = this.bg;
-    g.lineStyle(4, 0x090719, 0.9);
-    g.lineBetween(x + sign.w / 2, sign.y - 18, x + sign.w / 2, sign.y + 2);
-    g.lineStyle(2, 0xffffff, 0.22);
-    g.lineBetween(x + sign.w / 2, sign.y - 18, x + sign.w / 2, sign.y + 2);
-
     g.fillStyle(0x090719, 0.86);
     g.fillRoundedRect(x - 8, sign.y - 8, sign.w + 16, sign.h + 16, 9);
     g.fillStyle(sign.color, 0.2 + pulse * 0.22);
