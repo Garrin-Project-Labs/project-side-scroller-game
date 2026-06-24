@@ -137,7 +137,10 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.obstacles = [];
     this.pickups = [];
     this.sparks = [];
-    for (const sign of this.tokyoSigns ?? []) sign.label?.destroy();
+    for (const sign of this.tokyoSigns ?? []) {
+      sign.label?.destroy();
+      sign.subLabel?.destroy();
+    }
     this.clouds = [
       { x: 90, y: 84, s: 0.45 },
       { x: 390, y: 62, s: 0.7 },
@@ -150,10 +153,10 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       phase: i * 0.71
     }));
     this.tokyoSigns = [
-      { x: 82, y: 174, w: 120, h: 44, color: 0xffd36b, text: 'RAMEN' },
-      { x: 296, y: 134, w: 76, h: 92, color: 0xff4fc3, text: '24H' },
-      { x: 506, y: 186, w: 112, h: 40, color: 0x6ef7d2, text: 'ROBO' },
-      { x: 724, y: 118, w: 88, h: 106, color: 0x8d5cff, text: 'NEON' }
+      { style: 'ramen', x: 76, y: 166, w: 142, h: 58, color: 0xff4fc3, accent: 0xffd36b, text: 'RAMEN', subText: 'NOODLES' },
+      { style: 'vertical', x: 294, y: 122, w: 76, h: 112, color: 0xff5fbf, accent: 0x6ef7d2, text: '24H', subText: 'OPEN' },
+      { style: 'billboard', x: 500, y: 176, w: 136, h: 54, color: 0x6ef7d2, accent: 0x8d5cff, text: 'ROBO', subText: 'PARTS' },
+      { style: 'capsule', x: 722, y: 110, w: 92, h: 118, color: 0x8d5cff, accent: 0xff73d4, text: 'NEON', subText: 'CLUB' }
     ];
     this.gameOverText.setText('');
     this.restartText.setText('');
@@ -423,30 +426,104 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   drawTokyoSigns() {
     for (const sign of this.tokyoSigns) {
       const x = sign.x - ((this.tick * this.speed * 0.42) % (W + 180));
-      const wrappedX = x < -140 ? x + W + 180 : x;
+      const wrappedX = x < -150 ? x + W + 180 : x;
       const pulse = 0.72 + Math.sin(this.tick * 0.08 + sign.x) * 0.18;
-      this.bg.fillStyle(0x090719, 0.9);
-      this.bg.fillRoundedRect(wrappedX - 6, sign.y - 6, sign.w + 12, sign.h + 12, 6);
-      this.bg.fillStyle(sign.color, pulse);
-      this.bg.fillRoundedRect(wrappedX, sign.y, sign.w, sign.h, 5);
-      this.bg.lineStyle(3, 0xffffff, 0.6);
-      this.bg.strokeRoundedRect(wrappedX, sign.y, sign.w, sign.h, 5);
-      this.bg.fillStyle(0xffffff, 0.92);
-      const fontSize = sign.text.length > 4 ? 18 : 24;
-      if (!sign.label) {
-        sign.label = this.add.text(0, 0, sign.text, {
-          fontFamily: 'Arial Black, Arial, sans-serif',
-          fontSize: `${fontSize}px`,
-          color: '#ffffff',
-          stroke: '#090719',
-          strokeThickness: 5
-        }).setOrigin(0.5).setDepth(1);
-      }
-      sign.label
-        .setPosition(wrappedX + sign.w / 2, sign.y + sign.h / 2)
-        .setAlpha(pulse)
-        .setVisible(!this.gameOver);
+      this.drawSignFrame(sign, wrappedX, pulse);
+      this.positionSignLabels(sign, wrappedX, pulse);
     }
+  }
+
+  drawSignFrame(sign, x, pulse) {
+    const g = this.bg;
+    g.lineStyle(4, 0x090719, 0.9);
+    g.lineBetween(x + sign.w / 2, sign.y - 18, x + sign.w / 2, sign.y + 2);
+    g.lineStyle(2, 0xffffff, 0.22);
+    g.lineBetween(x + sign.w / 2, sign.y - 18, x + sign.w / 2, sign.y + 2);
+
+    g.fillStyle(0x090719, 0.86);
+    g.fillRoundedRect(x - 8, sign.y - 8, sign.w + 16, sign.h + 16, 9);
+    g.fillStyle(sign.color, 0.2 + pulse * 0.22);
+    g.fillRoundedRect(x - 14, sign.y - 14, sign.w + 28, sign.h + 28, 14);
+
+    if (sign.style === 'ramen') {
+      g.fillStyle(0x18091f, 0.96);
+      g.fillRoundedRect(x, sign.y, sign.w, sign.h, 8);
+      g.fillStyle(sign.color, pulse);
+      g.fillRoundedRect(x + 8, sign.y + 14, sign.w - 16, sign.h - 20, 5);
+      for (let sx = x + 8; sx < x + sign.w - 8; sx += 24) {
+        g.fillStyle((sx / 24) % 2 < 1 ? sign.accent : 0xffffff, 0.9);
+        g.fillRect(sx, sign.y + 3, 18, 14);
+      }
+      g.fillStyle(sign.accent, 0.9);
+      g.fillCircle(x + sign.w + 18, sign.y + 28, 17);
+      g.lineStyle(3, 0xffffff, 0.55);
+      g.strokeCircle(x + sign.w + 18, sign.y + 28, 17);
+    } else if (sign.style === 'vertical') {
+      g.fillStyle(0x120820, 0.98);
+      g.fillRoundedRect(x, sign.y, sign.w, sign.h, 10);
+      g.lineStyle(5, sign.color, pulse);
+      g.strokeRoundedRect(x + 4, sign.y + 4, sign.w - 8, sign.h - 8, 8);
+      g.lineStyle(2, sign.accent, 0.7);
+      for (let y = sign.y + 20; y < sign.y + sign.h - 10; y += 22) g.lineBetween(x + 12, y, x + sign.w - 12, y);
+      g.fillStyle(sign.accent, pulse);
+      g.fillCircle(x + sign.w - 12, sign.y + 14, 5);
+      g.fillCircle(x + 12, sign.y + sign.h - 14, 5);
+    } else if (sign.style === 'billboard') {
+      g.fillStyle(0x0b1027, 0.98);
+      g.beginPath();
+      g.moveTo(x + 10, sign.y);
+      g.lineTo(x + sign.w - 8, sign.y + 4);
+      g.lineTo(x + sign.w, sign.y + sign.h - 8);
+      g.lineTo(x, sign.y + sign.h);
+      g.closePath();
+      g.fillPath();
+      g.lineStyle(4, sign.color, pulse);
+      g.strokePath();
+      g.fillStyle(sign.accent, 0.8);
+      for (let bx = x + 18; bx < x + sign.w - 12; bx += 22) g.fillCircle(bx, sign.y + sign.h - 8, 4);
+      g.lineStyle(3, sign.accent, 0.55);
+      g.lineBetween(x + 26, sign.y - 10, x + 46, sign.y);
+      g.lineBetween(x + sign.w - 28, sign.y - 10, x + sign.w - 48, sign.y);
+    } else {
+      g.fillStyle(0x100821, 0.98);
+      g.fillRoundedRect(x, sign.y, sign.w, sign.h, 28);
+      g.lineStyle(5, sign.accent, pulse);
+      g.strokeRoundedRect(x + 5, sign.y + 5, sign.w - 10, sign.h - 10, 22);
+      g.fillStyle(sign.color, 0.28 + pulse * 0.24);
+      g.fillRoundedRect(x + 14, sign.y + 16, sign.w - 28, sign.h - 32, 18);
+      g.fillStyle(0xffffff, 0.55);
+      g.fillCircle(x + sign.w / 2, sign.y + 14, 5);
+      g.fillCircle(x + sign.w / 2, sign.y + sign.h - 14, 5);
+    }
+  }
+
+  positionSignLabels(sign, x, pulse) {
+    if (!sign.label) {
+      const fontSize = sign.style === 'vertical' || sign.style === 'capsule' ? 22 : 23;
+      sign.label = this.add.text(0, 0, sign.text, {
+        fontFamily: 'Arial Black, Arial, sans-serif',
+        fontSize: `${fontSize}px`,
+        color: '#ffffff',
+        stroke: '#090719',
+        strokeThickness: 5
+      }).setOrigin(0.5).setDepth(1);
+      sign.subLabel = this.add.text(0, 0, sign.subText, {
+        fontFamily: 'Arial Black, Arial, sans-serif',
+        fontSize: sign.style === 'vertical' ? '13px' : '11px',
+        color: '#fff6a6',
+        stroke: '#090719',
+        strokeThickness: 4
+      }).setOrigin(0.5).setDepth(1);
+    }
+
+    sign.label
+      .setPosition(x + sign.w / 2, sign.y + sign.h * (sign.style === 'vertical' ? 0.42 : 0.48))
+      .setAlpha(pulse)
+      .setVisible(true);
+    sign.subLabel
+      .setPosition(x + sign.w / 2, sign.y + sign.h * (sign.style === 'vertical' ? 0.7 : 0.76))
+      .setAlpha(0.72 + pulse * 0.24)
+      .setVisible(true);
   }
 
   drawRoad() {
