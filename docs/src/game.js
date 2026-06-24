@@ -148,14 +148,12 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       s: 0.45 + (i % 5) * 0.12,
       phase: i * 0.71
     }));
-    this.signalGhosts = Array.from({ length: 10 }, (_, i) => ({
-      x: (i * 137 + 90) % (W + 220),
-      y: 246 + ((i * 53) % 142),
-      w: 42 + (i % 4) * 22,
-      h: 10 + (i % 3) * 8,
-      phase: i * 0.83,
-      tint: i % 2 === 0 ? 0xff5fbf : 0x6ef7d2
-    }));
+    this.tokyoSigns = [
+      { x: 74, y: 176, w: 72, h: 42, color: 0xff4fc3, text: 'RUN' },
+      { x: 276, y: 132, w: 60, h: 94, color: 0x6ef7d2, text: '24H' },
+      { x: 482, y: 188, w: 96, h: 38, color: 0xffd36b, text: 'BOT' },
+      { x: 702, y: 118, w: 74, h: 104, color: 0x8d5cff, text: 'NEON' }
+    ];
     this.gameOverText.setText('');
     this.restartText.setText('');
     this.robotSprite.setPosition(this.robot.x, this.robot.y).setRotation(0);
@@ -380,101 +378,98 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   drawBackground() {
-    this.bg.fillGradientStyle(0x211142, 0x211142, 0x5c2f75, 0x0b1027, 1);
+    this.bg.fillGradientStyle(0x120820, 0x120820, 0x321551, 0x050612, 1);
     this.bg.fillRect(0, 0, W, H);
 
-    this.bg.fillStyle(0xffd36b, 0.95);
-    this.bg.fillCircle(804, 76, 42);
-    this.bg.fillStyle(0xfff0b2, 0.16);
-    this.bg.fillCircle(804, 76, 70);
+    this.bg.fillStyle(0xff73d4, 0.9);
+    this.bg.fillCircle(818, 72, 36);
+    this.bg.fillStyle(0x8d5cff, 0.18);
+    this.bg.fillCircle(818, 72, 68);
 
-    this.bg.fillStyle(0xffffff, 0.08);
-    for (const c of this.clouds) {
-      this.bg.fillCircle(c.x, c.y + 18, 28 * c.s);
-      this.bg.fillCircle(c.x + 35 * c.s, c.y + 8, 38 * c.s);
-      this.bg.fillCircle(c.x + 82 * c.s, c.y + 20, 26 * c.s);
-    }
-
-    this.drawNeonStars();
-
-    this.bg.fillStyle(0x261947, 1);
-    for (let x = -110 + ((this.tick * this.speed * 0.22) % 210); x < W + 240; x += 210) {
-      this.bg.fillTriangle(x, GROUND_Y, x + 82, 162, x + 164, GROUND_Y);
-      this.bg.fillStyle(0x35205b, 1);
-      this.bg.fillTriangle(x + 70, GROUND_Y, x + 126, 196, x + 196, GROUND_Y);
-      this.bg.fillStyle(0x261947, 1);
-    }
-
-    this.bg.lineStyle(5, 0x6ef7d2, 0.3);
-    for (let x = -100 + ((this.tick * this.speed * 0.38) % 180); x < W + 220; x += 180) {
-      this.bg.lineBetween(x, GROUND_Y, x + 38, 276);
-      this.bg.lineBetween(x + 38, 276, x + 76, GROUND_Y);
-      this.bg.fillStyle(0x2cffbb, 0.18);
-      this.bg.fillCircle(x + 38, 274, 14);
-    }
-
-    this.drawSignalNoise();
-
-    this.world.fillStyle(0x130f2a, 1);
-    this.world.fillRect(0, GROUND_Y, W, H - GROUND_Y);
-    this.world.fillGradientStyle(0x23133e, 0x23133e, 0x0b1027, 0x0b1027, 1);
-    this.world.fillRect(0, GROUND_Y + 12, W, H - GROUND_Y - 12);
-    this.world.fillStyle(0xff5fbf, 1);
-    this.world.fillRect(0, GROUND_Y, W, 8);
-    this.world.fillStyle(0x6ef7d2, 1);
-    this.world.fillRect(0, GROUND_Y + 8, W, 5);
-    this.world.fillStyle(0xffffff, 0.16);
-    for (let x = -80 + ((this.tick * this.speed) % 80); x < W + 80; x += 80) this.world.fillRect(x, GROUND_Y + 24, 38, 6);
+    this.drawCitySparkles();
+    this.drawTokyoSkyline(0.12, 0x17102d, 250, 92);
+    this.drawTokyoSkyline(0.28, 0x21133f, 286, 120);
+    this.drawTokyoSigns();
+    this.drawRoad();
   }
 
-  drawNeonStars() {
+  drawTokyoSkyline(speedScale, color, baseY, maxHeight) {
+    const offset = (this.tick * this.speed * speedScale) % 150;
+    this.bg.fillStyle(color, 1);
+    for (let x = -150 - offset; x < W + 180; x += 150) {
+      const h1 = 70 + ((x + 400) % maxHeight);
+      const h2 = 96 + ((x + 260) % (maxHeight + 36));
+      const towerW = 58 + ((x + 90) % 36);
+      this.bg.fillRect(x, baseY - h1, towerW, h1 + (GROUND_Y - baseY));
+      this.bg.fillRect(x + 72, baseY - h2, towerW + 18, h2 + (GROUND_Y - baseY));
+      this.bg.fillTriangle(x + 92, baseY - h2, x + 118, baseY - h2 - 46, x + 144, baseY - h2);
+
+      const lit = speedScale > 0.2 ? 0.55 : 0.25;
+      for (let wy = baseY - h1 + 16; wy < baseY - 8; wy += 22) {
+        this.bg.fillStyle((wy + x) % 44 === 0 ? 0xffd36b : 0x6ef7d2, lit);
+        this.bg.fillRect(x + 12, wy, 10, 8);
+        this.bg.fillRect(x + 34, wy, 10, 8);
+      }
+      for (let wy = baseY - h2 + 18; wy < baseY - 8; wy += 24) {
+        this.bg.fillStyle((wy + x) % 48 === 0 ? 0xff5fbf : 0xffffff, lit * 0.7);
+        this.bg.fillRect(x + 88, wy, 12, 8);
+        this.bg.fillRect(x + 118, wy, 12, 8);
+      }
+      this.bg.fillStyle(color, 1);
+    }
+  }
+
+  drawTokyoSigns() {
+    for (const sign of this.tokyoSigns) {
+      const x = sign.x - ((this.tick * this.speed * 0.42) % (W + 180));
+      const wrappedX = x < -140 ? x + W + 180 : x;
+      const pulse = 0.72 + Math.sin(this.tick * 0.08 + sign.x) * 0.18;
+      this.bg.fillStyle(0x090719, 0.9);
+      this.bg.fillRoundedRect(wrappedX - 6, sign.y - 6, sign.w + 12, sign.h + 12, 6);
+      this.bg.fillStyle(sign.color, pulse);
+      this.bg.fillRoundedRect(wrappedX, sign.y, sign.w, sign.h, 5);
+      this.bg.lineStyle(3, 0xffffff, 0.6);
+      this.bg.strokeRoundedRect(wrappedX, sign.y, sign.w, sign.h, 5);
+      this.bg.fillStyle(0x090719, 0.42);
+      for (let y = sign.y + 9; y < sign.y + sign.h - 4; y += 12) this.bg.fillRect(wrappedX + 8, y, sign.w - 16, 4);
+    }
+  }
+
+  drawRoad() {
+    const g = this.world;
+    g.fillStyle(0x050611, 1);
+    g.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+    g.fillGradientStyle(0x26223a, 0x26223a, 0x070811, 0x070811, 1);
+    g.fillRect(0, GROUND_Y + 10, W, H - GROUND_Y - 10);
+
+    g.fillStyle(0xff4fc3, 1);
+    g.fillRect(0, GROUND_Y, W, 5);
+    g.fillStyle(0x6ef7d2, 0.9);
+    g.fillRect(0, GROUND_Y + 5, W, 4);
+
+    g.lineStyle(2, 0xffffff, 0.1);
+    for (let y = GROUND_Y + 22; y < H; y += 24) g.lineBetween(0, y, W, y + 10);
+
+    const laneOffset = (this.tick * this.speed * 2.2) % 96;
+    g.fillStyle(0xffd36b, 0.95);
+    for (let x = -96 + laneOffset; x < W + 96; x += 96) {
+      g.fillRect(x, GROUND_Y + 56, 48, 7);
+      g.fillRect(x + 18, GROUND_Y + 86, 70, 8);
+    }
+
+    g.fillStyle(0xffffff, 0.18);
+    for (let x = -80 + ((this.tick * this.speed * 1.35) % 80); x < W + 80; x += 80) {
+      g.fillRect(x, GROUND_Y + 22, 38, 4);
+    }
+  }
+
+  drawCitySparkles() {
     for (const f of this.fireflies) {
-      const pulse = 0.45 + Math.sin(this.tick * 0.055 + f.phase) * 0.25;
+      const pulse = 0.35 + Math.sin(this.tick * 0.055 + f.phase) * 0.22;
       this.bg.fillStyle(0x8fffe4, pulse);
-      this.bg.fillCircle(f.x, f.y, 1.8 + f.s);
-      this.bg.fillStyle(0xff74d4, pulse * 0.42);
-      this.bg.fillCircle(f.x, f.y, 5.5 + f.s * 2);
-    }
-  }
-
-  // Visual-noise seam: these are harmless background decoys that raise the read-the-screen challenge.
-  drawSignalNoise() {
-    const heat = Math.min(1, this.tick / 1800);
-    const shimmer = Math.sin(this.tick * 0.09) * 0.5 + 0.5;
-    const alpha = 0.07 + heat * 0.18;
-
-    for (let y = 150; y < GROUND_Y - 22; y += 38) {
-      const x = -180 + ((this.tick * this.speed * (0.42 + y * 0.0007)) % 220);
-      this.bg.fillStyle(y % 76 === 0 ? 0xff5fbf : 0x6ef7d2, alpha * 0.18);
-      this.bg.fillRect(x, y, W + 260, 3);
-    }
-
-    for (const g of this.signalGhosts) {
-      const drift = (this.tick * this.speed * (0.34 + (g.w % 5) * 0.015)) % (W + 260);
-      const x = W + 70 + g.x - drift;
-      const y = g.y + Math.sin(this.tick * 0.045 + g.phase) * 8;
-      const pulse = alpha * (0.55 + Math.sin(this.tick * 0.08 + g.phase) * 0.25);
-      this.bg.fillStyle(g.tint, pulse);
-      this.bg.fillRect(x, y, g.w, g.h);
-      this.bg.fillStyle(0xffffff, pulse * 0.45);
-      this.bg.fillRect(x + 8, y + 2, Math.max(8, g.w * 0.42), 3);
-    }
-
-    this.bg.lineStyle(2, 0xffd36b, 0.08 + heat * 0.14);
-    for (let i = 0; i < 6; i++) {
-      const x = -90 + ((this.tick * this.speed * (0.55 + i * 0.06) + i * 154) % (W + 180));
-      const y = GROUND_Y - 106 + i * 13 + Math.sin(this.tick * 0.05 + i) * 9;
-      this.bg.beginPath();
-      this.bg.moveTo(x, y);
-      this.bg.lineTo(x + 24, y - 20);
-      this.bg.lineTo(x + 48, y + 10);
-      this.bg.lineTo(x + 74, y - 12);
-      this.bg.strokePath();
-    }
-
-    this.bg.fillStyle(0xffffff, 0.025 + shimmer * 0.025);
-    for (let x = -24 + ((this.tick * this.speed * 1.7) % 48); x < W + 48; x += 48) {
-      this.bg.fillRect(x, 132, 3, GROUND_Y - 132);
+      this.bg.fillRect(f.x, f.y, 2 + f.s, 2 + f.s);
+      this.bg.fillStyle(0xff74d4, pulse * 0.34);
+      this.bg.fillCircle(f.x + 2, f.y + 2, 4 + f.s * 1.7);
     }
   }
 
