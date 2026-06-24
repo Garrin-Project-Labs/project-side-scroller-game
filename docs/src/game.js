@@ -391,8 +391,6 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.bg.fillCircle(818, 72, 68);
 
     this.drawCitySparkles();
-    this.drawTokyoSkyline(0.12, 0x17102d, 250, 92);
-    this.drawTokyoSkyline(0.28, 0x21133f, 286, 120);
     this.drawNearTokyoStreetfront();
     this.drawTokyoSigns();
     this.drawRoad();
@@ -425,47 +423,114 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   drawNearTokyoStreetfront() {
-    const offset = (this.tick * this.speed * 0.34) % 260;
-    for (let x = -260 - offset; x < W + 300; x += 260) {
-      const variant = Math.abs(Math.floor(x / 260)) % 3;
-      const top = variant === 0 ? 108 : variant === 1 ? 132 : 92;
-      const w = variant === 1 ? 226 : 248;
+    const segment = 260;
+    const offset = (this.tick * this.speed * 0.34) % segment;
+    const fronts = [
+      { top: 88, w: 248, face: 0x22133e, trim: 0x6ef7d2, accent: 0xff73d4, roof: 'flat' },
+      { top: 126, w: 226, face: 0x17102f, trim: 0xff5fbf, accent: 0xffd36b, roof: 'antenna' },
+      { top: 72, w: 238, face: 0x281440, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' },
+      { top: 112, w: 254, face: 0x101b37, trim: 0x8d5cff, accent: 0xff5fbf, roof: 'pipes' },
+      { top: 98, w: 216, face: 0x2a102d, trim: 0xff73d4, accent: 0x6ef7d2, roof: 'stack' }
+    ];
 
-      this.bg.fillStyle(0x0b0718, 0.98);
-      this.bg.fillRect(x, top, w, GROUND_Y - top + 10);
-      this.bg.fillStyle(variant === 0 ? 0x22133e : variant === 1 ? 0x18102f : 0x26143f, 0.96);
-      this.bg.fillRect(x + 10, top + 12, w - 24, GROUND_Y - top - 2);
-
-      this.bg.lineStyle(5, variant === 1 ? 0xff5fbf : 0x6ef7d2, 0.36);
-      this.bg.lineBetween(x + 12, top + 14, x + w - 20, top + 14);
-      this.bg.lineStyle(3, variant === 2 ? 0xffd36b : 0xff73d4, 0.32);
-      this.bg.lineBetween(x + 16, GROUND_Y - 34, x + w - 24, GROUND_Y - 34);
-
-      for (let wy = top + 34; wy < GROUND_Y - 58; wy += 34) {
-        for (let wx = x + 24; wx < x + w - 34; wx += 36) {
-          const color = (wx + wy) % 3 === 0 ? 0xffd36b : (wx + wy) % 3 === 1 ? 0x6ef7d2 : 0xff5fbf;
-          this.bg.fillStyle(color, 0.34);
-          this.bg.fillRect(wx, wy, 16, 14);
-          this.bg.fillStyle(0xffffff, 0.12);
-          this.bg.fillRect(wx + 3, wy + 2, 5, 10);
-        }
-      }
-
-      this.bg.fillStyle(0x100821, 1);
-      this.bg.fillRoundedRect(x + 22, GROUND_Y - 78, w - 58, 58, 8);
-      this.bg.lineStyle(4, 0x6ef7d2, 0.55);
-      this.bg.strokeRoundedRect(x + 22, GROUND_Y - 78, w - 58, 58, 8);
-      this.bg.lineStyle(2, 0xff73d4, 0.55);
-      for (let sx = x + 38; sx < x + w - 58; sx += 28) this.bg.lineBetween(sx, GROUND_Y - 72, sx + 14, GROUND_Y - 26);
-
-      this.bg.fillStyle(variant === 2 ? 0xffd36b : 0xff5fbf, 0.72);
-      for (let bulb = x + 28; bulb < x + w - 26; bulb += 22) this.bg.fillCircle(bulb, top + 16, 3.5);
+    for (let i = -1; i < Math.ceil(W / segment) + 2; i++) {
+      const spec = fronts[((i % fronts.length) + fronts.length) % fronts.length];
+      const x = i * segment - offset;
+      this.drawStreetfrontBuilding(x, spec, i);
     }
 
     this.bg.lineStyle(3, 0x090719, 0.9);
     this.bg.lineBetween(0, 148, W, 116);
     this.bg.lineStyle(1, 0xffffff, 0.18);
     this.bg.lineBetween(0, 146, W, 114);
+  }
+
+  drawStreetfrontBuilding(x, spec, index) {
+    const g = this.bg;
+    const top = spec.top;
+    const w = spec.w;
+
+    g.fillStyle(0x070512, 0.98);
+    g.fillRect(x, top, w, GROUND_Y - top + 10);
+    g.fillStyle(spec.face, 0.98);
+    g.fillRect(x + 10, top + 12, w - 24, GROUND_Y - top - 2);
+    g.fillStyle(0xffffff, 0.04);
+    g.fillRect(x + 18, top + 18, Math.max(40, w * 0.32), GROUND_Y - top - 22);
+
+    this.drawStreetfrontRoof(x, top, w, spec);
+
+    g.lineStyle(5, spec.trim, 0.46);
+    g.lineBetween(x + 12, top + 14, x + w - 20, top + 14);
+    g.lineStyle(3, spec.accent, 0.38);
+    g.lineBetween(x + 16, GROUND_Y - 34, x + w - 24, GROUND_Y - 34);
+
+    let row = 0;
+    for (let wy = top + 34; wy < GROUND_Y - 62; wy += 34) {
+      let col = 0;
+      for (let wx = x + 24; wx < x + w - 34; wx += 36) {
+        const palette = [0xffd36b, 0x6ef7d2, 0xff5fbf, 0x8d5cff];
+        const color = palette[(index * 3 + row + col * 2) % palette.length];
+        const lit = (index + row * 2 + col) % 5 !== 1;
+        g.fillStyle(lit ? color : 0x090719, lit ? 0.38 : 0.72);
+        g.fillRect(wx, wy, 16, 14);
+        if (lit) {
+          g.fillStyle(0xffffff, 0.12);
+          g.fillRect(wx + 3, wy + 2, 5, 10);
+        }
+        col++;
+      }
+      row++;
+    }
+
+    const shopW = w - 58;
+    g.fillStyle(0x100821, 1);
+    g.fillRoundedRect(x + 22, GROUND_Y - 82, shopW, 62, 8);
+    g.lineStyle(4, spec.trim, 0.62);
+    g.strokeRoundedRect(x + 22, GROUND_Y - 82, shopW, 62, 8);
+    g.lineStyle(2, spec.accent, 0.6);
+    for (let sx = x + 38; sx < x + w - 58; sx += 28) g.lineBetween(sx, GROUND_Y - 76, sx + 14, GROUND_Y - 28);
+
+    g.fillStyle(spec.accent, 0.74);
+    for (let bulb = x + 28; bulb < x + w - 26; bulb += 22) g.fillCircle(bulb, top + 16, 3.5);
+    g.fillStyle(spec.trim, 0.32);
+    for (let strip = top + 46; strip < GROUND_Y - 104; strip += 58) g.fillRect(x + w - 18, strip, 6, 34);
+  }
+
+  drawStreetfrontRoof(x, top, w, spec) {
+    const g = this.bg;
+    g.fillStyle(0x05040e, 0.96);
+    if (spec.roof === 'slant') {
+      g.beginPath();
+      g.moveTo(x + 6, top + 14);
+      g.lineTo(x + 44, top - 18);
+      g.lineTo(x + w - 18, top + 6);
+      g.lineTo(x + w - 18, top + 20);
+      g.lineTo(x + 6, top + 20);
+      g.closePath();
+      g.fillPath();
+    } else {
+      g.fillRect(x + 6, top - 10, w - 24, 22);
+    }
+
+    g.lineStyle(3, spec.trim, 0.36);
+    g.lineBetween(x + 14, top + 2, x + w - 26, top + 2);
+
+    if (spec.roof === 'antenna') {
+      g.lineStyle(3, spec.accent, 0.45);
+      g.lineBetween(x + w - 58, top - 10, x + w - 38, top - 52);
+      g.lineBetween(x + w - 38, top - 52, x + w - 18, top - 18);
+    } else if (spec.roof === 'pipes') {
+      g.lineStyle(5, spec.accent, 0.35);
+      g.lineBetween(x + 34, top - 10, x + 34, top - 34);
+      g.lineBetween(x + 34, top - 34, x + 92, top - 34);
+    } else if (spec.roof === 'stack') {
+      g.fillStyle(0x120820, 0.96);
+      g.fillRect(x + 36, top - 38, 34, 30);
+      g.fillRect(x + 84, top - 28, 48, 20);
+      g.lineStyle(2, spec.accent, 0.4);
+      g.lineBetween(x + 42, top - 30, x + 62, top - 30);
+      g.lineBetween(x + 92, top - 20, x + 122, top - 20);
+    }
   }
 
   drawTokyoSigns() {
@@ -500,8 +565,8 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
     for (let wy = roofY + 22; wy < faceBottom - 24; wy += 24) {
       for (let wx = buildingX + 16; wx < buildingX + buildingW - 26; wx += 24) {
-        const lit = ((Math.floor(wx + wy) + this.tick) % 5) !== 0;
-        g.fillStyle(lit ? ((wx + wy) % 2 === 0 ? 0x6ef7d2 : 0xff73d4) : 0x090719, lit ? 0.42 : 0.7);
+        const lit = ((Math.floor(sign.x + wx + wy)) % 5) !== 0;
+        g.fillStyle(lit ? ((Math.floor(sign.x + wx + wy)) % 2 === 0 ? 0x6ef7d2 : 0xff73d4) : 0x090719, lit ? 0.42 : 0.7);
         g.fillRect(wx, wy, 9, 10);
       }
     }
