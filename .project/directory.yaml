@@ -1,0 +1,7 @@
+directory:
+  listed: true
+  title: "Side Scroller Game"
+  description: "Browser side-scroller game prototype with upgraded runner art."
+  tags: [game, platformer]
+  status: "live"
+  sortOrder: 1000
