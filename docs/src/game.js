@@ -3,10 +3,10 @@ const GameConfig = Object.freeze({
   width: 960,
   height: 540,
   groundY: 430,
-  startSpeed: 1.28,
-  maxSpeed: 8.8,
-  baseSpeedRamp: 0.0005625,
-  timeSpeedRamp: 0.00000001875,
+  startSpeed: 1.36,
+  maxSpeed: 9.4,
+  baseSpeedRamp: 0.00062,
+  timeSpeedRamp: 0.000000021,
   robotX: 128,
   robotWidth: 58,
   robotHeight: 78,
@@ -79,7 +79,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       stroke: '#07101d',
       strokeThickness: 4
     }).setDepth(20);
-    this.helpText = this.add.text(W / 2, 58, 'Collect batteries. Jump over water pits!', {
+    this.helpText = this.add.text(W / 2, 58, 'Neon forest sprint: collect batteries, dodge glow pools!', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '24px',
       color: '#ffffff',
@@ -138,10 +138,16 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.pickups = [];
     this.sparks = [];
     this.clouds = [
-      { x: 90, y: 80, s: 0.45 },
-      { x: 390, y: 60, s: 0.7 },
-      { x: 735, y: 105, s: 0.55 }
+      { x: 90, y: 84, s: 0.45 },
+      { x: 390, y: 62, s: 0.7 },
+      { x: 735, y: 108, s: 0.55 }
     ];
+    this.fireflies = Array.from({ length: 26 }, (_, i) => ({
+      x: (i * 83 + 35) % W,
+      y: 54 + ((i * 47) % 284),
+      s: 0.45 + (i % 5) * 0.12,
+      phase: i * 0.71
+    }));
     this.gameOverText.setText('');
     this.restartText.setText('');
     this.robotSprite.setPosition(this.robot.x, this.robot.y).setRotation(0);
@@ -335,7 +341,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.best = Math.max(this.best, Math.floor(this.score));
     localStorage.setItem('robotBatteryRunnerBest', String(this.best));
     this.addSparks(this.robot.x + this.robot.w / 2, GROUND_Y - 4, 0x6aa8ff, 34);
-    this.gameOverText.setText('SPLASH!');
+    this.gameOverText.setText('ZAP-SPLASH!');
     this.restartText.setText(`Score ${Math.floor(this.score)} • Batteries ${this.batteries}\nPress Space, ↑, click, or R to run again`);
   }
 
@@ -366,25 +372,59 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   drawBackground() {
-    this.bg.fillGradientStyle(0x17375e, 0x17375e, 0x244b74, 0x102039, 1);
+    this.bg.fillGradientStyle(0x211142, 0x211142, 0x5c2f75, 0x0b1027, 1);
     this.bg.fillRect(0, 0, W, H);
-    this.bg.fillStyle(0xffffff, 0.12);
+
+    this.bg.fillStyle(0xffd36b, 0.95);
+    this.bg.fillCircle(804, 76, 42);
+    this.bg.fillStyle(0xfff0b2, 0.16);
+    this.bg.fillCircle(804, 76, 70);
+
+    this.bg.fillStyle(0xffffff, 0.08);
     for (const c of this.clouds) {
       this.bg.fillCircle(c.x, c.y + 18, 28 * c.s);
       this.bg.fillCircle(c.x + 35 * c.s, c.y + 8, 38 * c.s);
       this.bg.fillCircle(c.x + 82 * c.s, c.y + 20, 26 * c.s);
     }
-    this.bg.fillStyle(0x1c3558, 1);
-    for (let x = -80 + ((this.tick * this.speed * 0.28) % 160); x < W + 200; x += 160) {
-      this.bg.fillRect(x, 266, 70, 164);
-      this.bg.fillRect(x + 20, 230, 32, 36);
+
+    this.drawNeonStars();
+
+    this.bg.fillStyle(0x261947, 1);
+    for (let x = -110 + ((this.tick * this.speed * 0.22) % 210); x < W + 240; x += 210) {
+      this.bg.fillTriangle(x, GROUND_Y, x + 82, 162, x + 164, GROUND_Y);
+      this.bg.fillStyle(0x35205b, 1);
+      this.bg.fillTriangle(x + 70, GROUND_Y, x + 126, 196, x + 196, GROUND_Y);
+      this.bg.fillStyle(0x261947, 1);
     }
-    this.world.fillStyle(0x17283f, 1);
+
+    this.bg.lineStyle(5, 0x6ef7d2, 0.3);
+    for (let x = -100 + ((this.tick * this.speed * 0.38) % 180); x < W + 220; x += 180) {
+      this.bg.lineBetween(x, GROUND_Y, x + 38, 276);
+      this.bg.lineBetween(x + 38, 276, x + 76, GROUND_Y);
+      this.bg.fillStyle(0x2cffbb, 0.18);
+      this.bg.fillCircle(x + 38, 274, 14);
+    }
+
+    this.world.fillStyle(0x130f2a, 1);
     this.world.fillRect(0, GROUND_Y, W, H - GROUND_Y);
-    this.world.fillStyle(0x2bdf9f, 1);
-    this.world.fillRect(0, GROUND_Y, W, 12);
-    this.world.fillStyle(0xffffff, 0.12);
-    for (let x = -80 + ((this.tick * this.speed) % 80); x < W + 80; x += 80) this.world.fillRect(x, GROUND_Y + 18, 38, 6);
+    this.world.fillGradientStyle(0x23133e, 0x23133e, 0x0b1027, 0x0b1027, 1);
+    this.world.fillRect(0, GROUND_Y + 12, W, H - GROUND_Y - 12);
+    this.world.fillStyle(0xff5fbf, 1);
+    this.world.fillRect(0, GROUND_Y, W, 8);
+    this.world.fillStyle(0x6ef7d2, 1);
+    this.world.fillRect(0, GROUND_Y + 8, W, 5);
+    this.world.fillStyle(0xffffff, 0.16);
+    for (let x = -80 + ((this.tick * this.speed) % 80); x < W + 80; x += 80) this.world.fillRect(x, GROUND_Y + 24, 38, 6);
+  }
+
+  drawNeonStars() {
+    for (const f of this.fireflies) {
+      const pulse = 0.45 + Math.sin(this.tick * 0.055 + f.phase) * 0.25;
+      this.bg.fillStyle(0x8fffe4, pulse);
+      this.bg.fillCircle(f.x, f.y, 1.8 + f.s);
+      this.bg.fillStyle(0xff74d4, pulse * 0.42);
+      this.bg.fillCircle(f.x, f.y, 5.5 + f.s * 2);
+    }
   }
 
   drawRobot() {
@@ -401,7 +441,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   drawWater(o) {
     const g = this.world;
-    g.fillStyle(0x07101d, 1);
+    g.fillStyle(0x090719, 1);
     g.beginPath();
     g.moveTo(o.x, o.y);
     g.lineTo(o.x + o.w, o.y);
@@ -409,7 +449,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     g.lineTo(o.x + 12, o.y + o.h);
     g.closePath();
     g.fillPath();
-    g.fillGradientStyle(0x83f5ff, 0x83f5ff, 0x174dc8, 0x174dc8, 1);
+    g.fillGradientStyle(0xff7adf, 0xff7adf, 0x4b1fff, 0x4b1fff, 1);
     g.beginPath();
     g.moveTo(o.x + 10, o.y + 16);
     g.lineTo(o.x + o.w - 10, o.y + 16);
@@ -417,7 +457,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     g.lineTo(o.x + 20, o.y + o.h - 6);
     g.closePath();
     g.fillPath();
-    g.lineStyle(4, 0xdcffff, 0.9);
+    g.lineStyle(4, 0x9efff1, 0.95);
     g.beginPath();
     for (let x = 14; x < o.w - 20; x += 18) {
       const sy = o.y + 14 + Math.sin((this.tick + x) * 0.12) * 3;
@@ -427,7 +467,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       g.lineTo(o.x + x + 16, ey);
     }
     g.strokePath();
-    g.lineStyle(6, 0x2bdf9f, 1);
+    g.lineStyle(6, 0xff5fbf, 1);
     g.lineBetween(o.x - 4, o.y + 1, o.x + 10, o.y + 1);
     g.lineBetween(o.x + o.w - 10, o.y + 1, o.x + o.w + 4, o.y + 1);
   }

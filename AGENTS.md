@@ -6,9 +6,8 @@ Project-specific agent instructions.
 - Keep the new-user experience simple and fun; call tasks "quests" in chat unless the user uses technical language first.
 - Hide engineering ceremony behind friendly flows. Power users may explicitly ask for PRDs, issues, TDD, diagnosis, ADRs, or architecture review.
 - Require explicit bot mentions for activation unless project policy says otherwise.
-- Use branch-per-task: `task/<id>-<slug>` for normal project work.
-- Do not mutate `main` directly for normal project work.
-- Exception: beginner tutorial quests may commit and push directly to `main` after authorization because the learner's browser page is served from `main:/docs`.
+- Push project work directly to `main` after the required authorization check. This project is intentionally beginner-friendly and served from `main:/docs`, so avoid branch/PR ceremony unless a maintainer explicitly asks for it.
+- Do not use branch-per-task by default for this project. If a temporary branch already exists, merge or replay the finished work onto `main` before pushing.
 - Durable docs/memory updates require maintainer approval.
 - Keep secrets, runtime state, and assistant memory out of git.
 
@@ -78,3 +77,27 @@ Use the canonical Matt Pocock state roles internally, but translate them into fr
 
 Single-context layout. Read `CONTEXT.md`; create ADRs only for hard-to-reverse, surprising trade-offs. See `docs/agents/domain.md`.
 
+## Production art assets
+
+For quick throwaway placeholders, internal image generation is okay. For proper/project production assets, use Garrin's original local ComfyUI workflow through:
+
+```bash
+/home/garrin/.openclaw/scripts/generate-production-art
+```
+
+Use this same original DreamShaper workflow for general art and game assets. The pixel-art LCM workflow was tested and removed because it was too much for current hardware.
+
+Before generating, gather enough details to build a useful prompt:
+
+- asset type: character concept, item icon, environment, UI badge, game sprite, etc.
+- main subject: who/what should appear
+- project/use case: where the asset will be used
+- style/vibe: fantasy RPG, cozy cartoon, dark sci-fi, sprite-like game icon, etc.
+- view/framing: full body, bust, centered icon, isometric, wide scene
+- key visual details: colors, materials, clothing, props, mood, powers/faction
+- background: simple, scene-specific, transparent-looking/simple, etc.
+- anything extra to avoid
+
+Do not change the fixed ComfyUI generation settings: checkpoint/model, sampler, scheduler, size, steps, CFG, seed, denoise, or batch size. Those are tuned for current hardware. Only change prompt details, optional extra avoid terms, filename prefix, output directory, or saved workflow path.
+
+After generation, inspect the result, attach the image back to chat with `MEDIA:<path>`, and if saving it into the project repo/workspace, run the normal `docs.write` authorization check first.

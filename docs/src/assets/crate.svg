@@ -1,8 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 176 176">
-  <defs><linearGradient id="wood" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#eab15d"/><stop offset=".55" stop-color="#a96732"/><stop offset="1" stop-color="#613719"/></linearGradient></defs>
-  <rect x="8" y="8" width="160" height="160" rx="16" fill="url(#wood)" stroke="#4c2b16" stroke-width="10"/>
-  <path d="M24 26h128M24 150h128M26 24v128M150 24v128" stroke="#ffd28a" stroke-width="7" opacity=".45"/>
-  <path d="M32 34 144 142M144 34 32 142" stroke="#4c2b16" stroke-width="14" stroke-linecap="round"/>
-  <path d="M36 38 140 138M140 38 36 138" stroke="#d9984f" stroke-width="5" stroke-linecap="round" opacity=".8"/>
-  <circle cx="38" cy="38" r="7" fill="#3a2112"/><circle cx="138" cy="38" r="7" fill="#3a2112"/><circle cx="38" cy="138" r="7" fill="#3a2112"/><circle cx="138" cy="138" r="7" fill="#3a2112"/>
+  <defs>
+    <linearGradient id="crate" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#ff73d4"/><stop offset=".55" stop-color="#7d5cff"/><stop offset="1" stop-color="#1a1142"/></linearGradient>
+  </defs>
+  <rect x="8" y="8" width="160" height="160" rx="18" fill="url(#crate)" stroke="#090719" stroke-width="10"/>
+  <path d="M24 28h128M24 148h128M28 24v128M148 24v128" stroke="#8fffe4" stroke-width="7" opacity=".55"/>
+  <path d="M32 36 144 140M144 36 32 140" stroke="#140d31" stroke-width="15" stroke-linecap="round"/>
+  <path d="M36 40 140 136M140 40 36 136" stroke="#fff7a8" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+  <circle cx="38" cy="38" r="7" fill="#fff7a8"/><circle cx="138" cy="38" r="7" fill="#8fffe4"/><circle cx="38" cy="138" r="7" fill="#8fffe4"/><circle cx="138" cy="138" r="7" fill="#fff7a8"/>
 </svg>
