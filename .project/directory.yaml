@@ -2,6 +2,7 @@ directory:
   listed: true
   title: "Side Scroller Game"
   description: "Browser side-scroller game prototype with upgraded runner art."
+  thumbnail: "docs/assets/thumbnails/side-scroller-game.png"
   tags: [game, platformer]
   status: "live"
   sortOrder: 1000
