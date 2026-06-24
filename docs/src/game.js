@@ -157,7 +157,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       { style: 'vertical', x: 294, y: 122, w: 76, h: 112, color: 0xff5fbf, accent: 0x6ef7d2, text: '24H', subText: 'OPEN' },
       { style: 'billboard', x: 500, y: 176, w: 136, h: 54, color: 0x6ef7d2, accent: 0x8d5cff, text: 'ROBO', subText: 'PARTS' },
       { style: 'capsule', x: 722, y: 110, w: 92, h: 118, color: 0x8d5cff, accent: 0xff73d4, text: 'NEON', subText: 'CLUB' },
-      { style: 'billboard', x: 980, y: 164, w: 132, h: 58, color: 0x1ca7ff, accent: 0x9effff, text: 'IDGF', subText: 'BLUE NEON' }
+      { style: 'billboard', x: 980, y: 164, w: 132, h: 58, color: 0x1ca7ff, accent: 0x9effff, text: 'IDGF', subText: '' }
     ];
     this.gameOverText.setText('');
     this.restartText.setText('');
