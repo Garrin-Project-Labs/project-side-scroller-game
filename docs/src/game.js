@@ -430,7 +430,11 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       { top: 126, w: 226, face: 0x17102f, trim: 0xff5fbf, accent: 0xffd36b, roof: 'antenna' },
       { top: 72, w: 238, face: 0x281440, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' },
       { top: 112, w: 254, face: 0x101b37, trim: 0x8d5cff, accent: 0xff5fbf, roof: 'pipes' },
-      { top: 98, w: 216, face: 0x2a102d, trim: 0xff73d4, accent: 0x6ef7d2, roof: 'stack' }
+      { top: 98, w: 216, face: 0x2a102d, trim: 0xff73d4, accent: 0x6ef7d2, roof: 'stack' },
+      { top: 58, w: 182, face: 0x132642, trim: 0x6ef7d2, accent: 0xffd36b, roof: 'antenna' },
+      { top: 146, w: 168, face: 0x24102a, trim: 0xff5fbf, accent: 0x8d5cff, roof: 'flat' },
+      { top: 82, w: 250, face: 0x0f1f34, trim: 0x8d5cff, accent: 0xff73d4, roof: 'pipes' },
+      { top: 118, w: 196, face: 0x2b183d, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' }
     ];
 
     for (let i = -1; i < Math.ceil(W / segment) + 2; i++) {
