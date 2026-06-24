@@ -148,6 +148,14 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       s: 0.45 + (i % 5) * 0.12,
       phase: i * 0.71
     }));
+    this.signalGhosts = Array.from({ length: 10 }, (_, i) => ({
+      x: (i * 137 + 90) % (W + 220),
+      y: 246 + ((i * 53) % 142),
+      w: 42 + (i % 4) * 22,
+      h: 10 + (i % 3) * 8,
+      phase: i * 0.83,
+      tint: i % 2 === 0 ? 0xff5fbf : 0x6ef7d2
+    }));
     this.gameOverText.setText('');
     this.restartText.setText('');
     this.robotSprite.setPosition(this.robot.x, this.robot.y).setRotation(0);
@@ -405,6 +413,8 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       this.bg.fillCircle(x + 38, 274, 14);
     }
 
+    this.drawSignalNoise();
+
     this.world.fillStyle(0x130f2a, 1);
     this.world.fillRect(0, GROUND_Y, W, H - GROUND_Y);
     this.world.fillGradientStyle(0x23133e, 0x23133e, 0x0b1027, 0x0b1027, 1);
@@ -424,6 +434,47 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       this.bg.fillCircle(f.x, f.y, 1.8 + f.s);
       this.bg.fillStyle(0xff74d4, pulse * 0.42);
       this.bg.fillCircle(f.x, f.y, 5.5 + f.s * 2);
+    }
+  }
+
+  // Visual-noise seam: these are harmless background decoys that raise the read-the-screen challenge.
+  drawSignalNoise() {
+    const heat = Math.min(1, this.tick / 1800);
+    const shimmer = Math.sin(this.tick * 0.09) * 0.5 + 0.5;
+    const alpha = 0.07 + heat * 0.18;
+
+    for (let y = 150; y < GROUND_Y - 22; y += 38) {
+      const x = -180 + ((this.tick * this.speed * (0.42 + y * 0.0007)) % 220);
+      this.bg.fillStyle(y % 76 === 0 ? 0xff5fbf : 0x6ef7d2, alpha * 0.18);
+      this.bg.fillRect(x, y, W + 260, 3);
+    }
+
+    for (const g of this.signalGhosts) {
+      const drift = (this.tick * this.speed * (0.34 + (g.w % 5) * 0.015)) % (W + 260);
+      const x = W + 70 + g.x - drift;
+      const y = g.y + Math.sin(this.tick * 0.045 + g.phase) * 8;
+      const pulse = alpha * (0.55 + Math.sin(this.tick * 0.08 + g.phase) * 0.25);
+      this.bg.fillStyle(g.tint, pulse);
+      this.bg.fillRect(x, y, g.w, g.h);
+      this.bg.fillStyle(0xffffff, pulse * 0.45);
+      this.bg.fillRect(x + 8, y + 2, Math.max(8, g.w * 0.42), 3);
+    }
+
+    this.bg.lineStyle(2, 0xffd36b, 0.08 + heat * 0.14);
+    for (let i = 0; i < 6; i++) {
+      const x = -90 + ((this.tick * this.speed * (0.55 + i * 0.06) + i * 154) % (W + 180));
+      const y = GROUND_Y - 106 + i * 13 + Math.sin(this.tick * 0.05 + i) * 9;
+      this.bg.beginPath();
+      this.bg.moveTo(x, y);
+      this.bg.lineTo(x + 24, y - 20);
+      this.bg.lineTo(x + 48, y + 10);
+      this.bg.lineTo(x + 74, y - 12);
+      this.bg.strokePath();
+    }
+
+    this.bg.fillStyle(0xffffff, 0.025 + shimmer * 0.025);
+    for (let x = -24 + ((this.tick * this.speed * 1.7) % 48); x < W + 48; x += 48) {
+      this.bg.fillRect(x, 132, 3, GROUND_Y - 132);
     }
   }
 
