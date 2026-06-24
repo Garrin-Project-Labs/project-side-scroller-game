@@ -567,7 +567,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
         this.drawSignFrame(sign, x, pulse);
         visibleX = x;
       }
-      this.positionSignLabels(sign, visibleX, pulse);
+      this.positionSignLabels(sign, visibleX, pulse, layer);
     }
   }
 
@@ -671,7 +671,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     }
   }
 
-  positionSignLabels(sign, x, pulse) {
+  positionSignLabels(sign, x, pulse, layer = 'front') {
     if (!sign.label) {
       const fontSize = sign.style === 'vertical' || sign.style === 'capsule' ? 22 : 23;
       sign.label = this.add.text(0, 0, sign.text, {
@@ -691,6 +691,9 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     }
 
     const visible = x !== null;
+    const labelDepth = layer === 'back' ? -1 : 1;
+    sign.label.setDepth(labelDepth);
+    sign.subLabel.setDepth(labelDepth);
     sign.label
       .setPosition((x ?? -999) + sign.w / 2, sign.y + sign.h * (sign.style === 'vertical' ? 0.42 : 0.48))
       .setAlpha(pulse)
