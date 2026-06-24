@@ -137,6 +137,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.obstacles = [];
     this.pickups = [];
     this.sparks = [];
+    for (const sign of this.tokyoSigns ?? []) sign.label?.destroy();
     this.clouds = [
       { x: 90, y: 84, s: 0.45 },
       { x: 390, y: 62, s: 0.7 },
@@ -149,10 +150,10 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       phase: i * 0.71
     }));
     this.tokyoSigns = [
-      { x: 74, y: 176, w: 72, h: 42, color: 0xff4fc3, text: 'RUN' },
-      { x: 276, y: 132, w: 60, h: 94, color: 0x6ef7d2, text: '24H' },
-      { x: 482, y: 188, w: 96, h: 38, color: 0xffd36b, text: 'BOT' },
-      { x: 702, y: 118, w: 74, h: 104, color: 0x8d5cff, text: 'NEON' }
+      { x: 82, y: 174, w: 120, h: 44, color: 0xffd36b, text: 'RAMEN' },
+      { x: 296, y: 134, w: 76, h: 92, color: 0xff4fc3, text: '24H' },
+      { x: 506, y: 186, w: 112, h: 40, color: 0x6ef7d2, text: 'ROBO' },
+      { x: 724, y: 118, w: 88, h: 106, color: 0x8d5cff, text: 'NEON' }
     ];
     this.gameOverText.setText('');
     this.restartText.setText('');
@@ -430,8 +431,21 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       this.bg.fillRoundedRect(wrappedX, sign.y, sign.w, sign.h, 5);
       this.bg.lineStyle(3, 0xffffff, 0.6);
       this.bg.strokeRoundedRect(wrappedX, sign.y, sign.w, sign.h, 5);
-      this.bg.fillStyle(0x090719, 0.42);
-      for (let y = sign.y + 9; y < sign.y + sign.h - 4; y += 12) this.bg.fillRect(wrappedX + 8, y, sign.w - 16, 4);
+      this.bg.fillStyle(0xffffff, 0.92);
+      const fontSize = sign.text.length > 4 ? 18 : 24;
+      if (!sign.label) {
+        sign.label = this.add.text(0, 0, sign.text, {
+          fontFamily: 'Arial Black, Arial, sans-serif',
+          fontSize: `${fontSize}px`,
+          color: '#ffffff',
+          stroke: '#090719',
+          strokeThickness: 5
+        }).setOrigin(0.5).setDepth(1);
+      }
+      sign.label
+        .setPosition(wrappedX + sign.w / 2, sign.y + sign.h / 2)
+        .setAlpha(pulse)
+        .setVisible(!this.gameOver);
     }
   }
 
