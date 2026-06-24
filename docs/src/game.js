@@ -393,6 +393,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.drawCitySparkles();
     this.drawTokyoSkyline(0.12, 0x17102d, 250, 92);
     this.drawTokyoSkyline(0.28, 0x21133f, 286, 120);
+    this.drawNearTokyoStreetfront();
     this.drawTokyoSigns();
     this.drawRoad();
   }
@@ -423,6 +424,50 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     }
   }
 
+  drawNearTokyoStreetfront() {
+    const offset = (this.tick * this.speed * 0.34) % 260;
+    for (let x = -260 - offset; x < W + 300; x += 260) {
+      const variant = Math.abs(Math.floor(x / 260)) % 3;
+      const top = variant === 0 ? 108 : variant === 1 ? 132 : 92;
+      const w = variant === 1 ? 226 : 248;
+
+      this.bg.fillStyle(0x0b0718, 0.98);
+      this.bg.fillRect(x, top, w, GROUND_Y - top + 10);
+      this.bg.fillStyle(variant === 0 ? 0x22133e : variant === 1 ? 0x18102f : 0x26143f, 0.96);
+      this.bg.fillRect(x + 10, top + 12, w - 24, GROUND_Y - top - 2);
+
+      this.bg.lineStyle(5, variant === 1 ? 0xff5fbf : 0x6ef7d2, 0.36);
+      this.bg.lineBetween(x + 12, top + 14, x + w - 20, top + 14);
+      this.bg.lineStyle(3, variant === 2 ? 0xffd36b : 0xff73d4, 0.32);
+      this.bg.lineBetween(x + 16, GROUND_Y - 34, x + w - 24, GROUND_Y - 34);
+
+      for (let wy = top + 34; wy < GROUND_Y - 58; wy += 34) {
+        for (let wx = x + 24; wx < x + w - 34; wx += 36) {
+          const color = (wx + wy) % 3 === 0 ? 0xffd36b : (wx + wy) % 3 === 1 ? 0x6ef7d2 : 0xff5fbf;
+          this.bg.fillStyle(color, 0.34);
+          this.bg.fillRect(wx, wy, 16, 14);
+          this.bg.fillStyle(0xffffff, 0.12);
+          this.bg.fillRect(wx + 3, wy + 2, 5, 10);
+        }
+      }
+
+      this.bg.fillStyle(0x100821, 1);
+      this.bg.fillRoundedRect(x + 22, GROUND_Y - 78, w - 58, 58, 8);
+      this.bg.lineStyle(4, 0x6ef7d2, 0.55);
+      this.bg.strokeRoundedRect(x + 22, GROUND_Y - 78, w - 58, 58, 8);
+      this.bg.lineStyle(2, 0xff73d4, 0.55);
+      for (let sx = x + 38; sx < x + w - 58; sx += 28) this.bg.lineBetween(sx, GROUND_Y - 72, sx + 14, GROUND_Y - 26);
+
+      this.bg.fillStyle(variant === 2 ? 0xffd36b : 0xff5fbf, 0.72);
+      for (let bulb = x + 28; bulb < x + w - 26; bulb += 22) this.bg.fillCircle(bulb, top + 16, 3.5);
+    }
+
+    this.bg.lineStyle(3, 0x090719, 0.9);
+    this.bg.lineBetween(0, 148, W, 116);
+    this.bg.lineStyle(1, 0xffffff, 0.18);
+    this.bg.lineBetween(0, 146, W, 114);
+  }
+
   drawTokyoSigns() {
     for (const sign of this.tokyoSigns) {
       const x = sign.x - ((this.tick * this.speed * 0.28) % (W + 180));
@@ -436,16 +481,16 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   drawSignBuilding(sign, x) {
     const g = this.bg;
-    const buildingX = x - 18;
-    const buildingW = sign.w + (sign.style === 'ramen' ? 56 : 36);
-    const roofY = Math.max(92, sign.y - 34);
+    const buildingX = x - 26;
+    const buildingW = sign.w + (sign.style === 'ramen' ? 72 : 52);
+    const roofY = Math.max(78, sign.y - 64);
     const faceBottom = GROUND_Y + 8;
 
-    g.fillStyle(0x120b28, 0.96);
+    g.fillStyle(0x0a0718, 0.98);
     g.fillRect(buildingX, roofY, buildingW, faceBottom - roofY);
-    g.fillStyle(0x0a0716, 0.8);
+    g.fillStyle(0x0a0716, 0.86);
     g.fillRect(buildingX + buildingW - 12, roofY + 8, 12, faceBottom - roofY - 8);
-    g.fillStyle(0x241542, 0.9);
+    g.fillStyle(0x261542, 0.96);
     g.fillRect(buildingX + 6, roofY + 8, buildingW - 24, faceBottom - roofY - 8);
 
     g.lineStyle(3, 0x6ef7d2, 0.2);
@@ -456,10 +501,15 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     for (let wy = roofY + 22; wy < faceBottom - 24; wy += 24) {
       for (let wx = buildingX + 16; wx < buildingX + buildingW - 26; wx += 24) {
         const lit = ((Math.floor(wx + wy) + this.tick) % 5) !== 0;
-        g.fillStyle(lit ? 0x6ef7d2 : 0x090719, lit ? 0.28 : 0.7);
+        g.fillStyle(lit ? ((wx + wy) % 2 === 0 ? 0x6ef7d2 : 0xff73d4) : 0x090719, lit ? 0.42 : 0.7);
         g.fillRect(wx, wy, 9, 10);
       }
     }
+
+    g.lineStyle(3, sign.color, 0.42);
+    g.lineBetween(buildingX + 12, sign.y - 12, buildingX + buildingW - 16, sign.y - 12);
+    g.lineStyle(2, sign.accent, 0.32);
+    for (let y = roofY + 18; y < faceBottom - 16; y += 28) g.lineBetween(buildingX + 10, y, buildingX + buildingW - 18, y);
 
     const railY = sign.y + sign.h / 2;
     g.lineStyle(5, 0x090719, 0.9);
