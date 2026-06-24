@@ -423,27 +423,27 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   drawNearTokyoStreetfront() {
-    const segment = 260;
     const fronts = [
       { top: 88, w: 248, face: 0x22133e, trim: 0x6ef7d2, accent: 0xff73d4, roof: 'flat' },
-      { top: 126, w: 226, face: 0x17102f, trim: 0xff5fbf, accent: 0xffd36b, roof: 'antenna' },
-      { top: 72, w: 238, face: 0x281440, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' },
-      { top: 112, w: 254, face: 0x101b37, trim: 0x8d5cff, accent: 0xff5fbf, roof: 'pipes' },
-      { top: 98, w: 216, face: 0x2a102d, trim: 0xff73d4, accent: 0x6ef7d2, roof: 'stack' },
-      { top: 58, w: 182, face: 0x132642, trim: 0x6ef7d2, accent: 0xffd36b, roof: 'antenna' },
-      { top: 146, w: 168, face: 0x24102a, trim: 0xff5fbf, accent: 0x8d5cff, roof: 'flat' },
-      { top: 82, w: 250, face: 0x0f1f34, trim: 0x8d5cff, accent: 0xff73d4, roof: 'pipes' },
-      { top: 118, w: 196, face: 0x2b183d, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' }
+      { top: 126, w: 304, face: 0x17102f, trim: 0xff5fbf, accent: 0xffd36b, roof: 'antenna' },
+      { top: 72, w: 206, face: 0x281440, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' },
+      { top: 112, w: 268, face: 0x101b37, trim: 0x8d5cff, accent: 0xff5fbf, roof: 'pipes' },
+      { top: 98, w: 176, face: 0x2a102d, trim: 0xff73d4, accent: 0x6ef7d2, roof: 'stack' },
+      { top: 58, w: 222, face: 0x132642, trim: 0x6ef7d2, accent: 0xffd36b, roof: 'antenna' },
+      { top: 146, w: 150, face: 0x24102a, trim: 0xff5fbf, accent: 0x8d5cff, roof: 'flat' },
+      { top: 82, w: 326, face: 0x0f1f34, trim: 0x8d5cff, accent: 0xff73d4, roof: 'pipes' },
+      { top: 118, w: 198, face: 0x2b183d, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' }
     ];
-    const stripWidth = segment * fronts.length;
+    const gap = 18;
+    const stripWidth = fronts.reduce((total, spec) => total + spec.w + gap, 0);
     const offset = (this.tick * this.speed * 0.34) % stripWidth;
 
     for (let repeat = -1; repeat <= 1; repeat++) {
+      let x = repeat * stripWidth - offset;
       for (let i = 0; i < fronts.length; i++) {
         const spec = fronts[i];
-        const x = i * segment + repeat * stripWidth - offset;
-        if (x + spec.w < -80 || x > W + 80) continue;
-        this.drawStreetfrontBuilding(x, spec, i);
+        if (x + spec.w >= -80 && x <= W + 80) this.drawStreetfrontBuilding(x, spec, i);
+        x += spec.w + gap;
       }
     }
 
