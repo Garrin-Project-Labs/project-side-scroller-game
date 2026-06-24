@@ -152,21 +152,11 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       s: 0.45 + (i % 5) * 0.12,
       phase: i * 0.71
     }));
-    this.streetfrontBuildings = [
-      { x: 0, top: 82, w: 184, face: 0x22133e, trim: 0x6ef7d2, accent: 0xff73d4, roof: 'flat', shop: 'wide' },
-      { x: 184, top: 126, w: 286, face: 0x17102f, trim: 0xff5fbf, accent: 0xffd36b, roof: 'antenna', shop: 'narrow' },
-      { x: 470, top: 66, w: 218, face: 0x281440, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant', shop: 'wide' },
-      { x: 688, top: 112, w: 344, face: 0x101b37, trim: 0x8d5cff, accent: 0xff5fbf, roof: 'pipes', shop: 'deep' },
-      { x: 1032, top: 94, w: 158, face: 0x2a102d, trim: 0xff73d4, accent: 0x6ef7d2, roof: 'stack', shop: 'narrow' },
-      { x: 1190, top: 54, w: 272, face: 0x132642, trim: 0x6ef7d2, accent: 0xffd36b, roof: 'tower', shop: 'wide' }
-    ];
-    this.streetfrontWidth = 1462;
     this.tokyoSigns = [
-      { style: 'ramen', x: 44, y: 166, w: 142, h: 58, color: 0xff4fc3, accent: 0xffd36b, text: 'RAMEN', subText: 'NOODLES' },
+      { style: 'ramen', x: 76, y: 166, w: 142, h: 58, color: 0xff4fc3, accent: 0xffd36b, text: 'RAMEN', subText: 'NOODLES' },
       { style: 'vertical', x: 294, y: 122, w: 76, h: 112, color: 0xff5fbf, accent: 0x6ef7d2, text: '24H', subText: 'OPEN' },
-      { style: 'billboard', x: 532, y: 176, w: 136, h: 54, color: 0x6ef7d2, accent: 0x8d5cff, text: 'ROBO', subText: 'PARTS' },
-      { style: 'capsule', x: 790, y: 110, w: 92, h: 118, color: 0x8d5cff, accent: 0xff73d4, text: 'NEON', subText: 'CLUB' },
-      { style: 'mega', x: 1064, y: 158, w: 260, h: 70, color: 0xff20f4, accent: 0x6effff, text: 'ZYNXZY IS LAME', subText: 'SUPER NEON' }
+      { style: 'billboard', x: 500, y: 176, w: 136, h: 54, color: 0x6ef7d2, accent: 0x8d5cff, text: 'ROBO', subText: 'PARTS' },
+      { style: 'capsule', x: 722, y: 110, w: 92, h: 118, color: 0x8d5cff, accent: 0xff73d4, text: 'NEON', subText: 'CLUB' }
     ];
     this.gameOverText.setText('');
     this.restartText.setText('');
@@ -433,15 +423,20 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   drawNearTokyoStreetfront() {
-    const span = this.streetfrontWidth;
-    const offset = (this.tick * this.speed * 0.34) % span;
-    for (let repeat = -1; repeat <= 1; repeat++) {
-      for (let i = 0; i < this.streetfrontBuildings.length; i++) {
-        const spec = this.streetfrontBuildings[i];
-        const x = spec.x + repeat * span - offset;
-        if (x + spec.w < -80 || x > W + 80) continue;
-        this.drawStreetfrontBuilding(x, spec, i);
-      }
+    const segment = 260;
+    const offset = (this.tick * this.speed * 0.34) % segment;
+    const fronts = [
+      { top: 88, w: 248, face: 0x22133e, trim: 0x6ef7d2, accent: 0xff73d4, roof: 'flat' },
+      { top: 126, w: 226, face: 0x17102f, trim: 0xff5fbf, accent: 0xffd36b, roof: 'antenna' },
+      { top: 72, w: 238, face: 0x281440, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' },
+      { top: 112, w: 254, face: 0x101b37, trim: 0x8d5cff, accent: 0xff5fbf, roof: 'pipes' },
+      { top: 98, w: 216, face: 0x2a102d, trim: 0xff73d4, accent: 0x6ef7d2, roof: 'stack' }
+    ];
+
+    for (let i = -1; i < Math.ceil(W / segment) + 2; i++) {
+      const spec = fronts[((i % fronts.length) + fronts.length) % fronts.length];
+      const x = i * segment - offset;
+      this.drawStreetfrontBuilding(x, spec, i);
     }
 
     this.bg.lineStyle(3, 0x090719, 0.9);
@@ -460,7 +455,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     g.fillStyle(spec.face, 0.98);
     g.fillRect(x + 10, top + 12, w - 24, GROUND_Y - top - 2);
     g.fillStyle(0xffffff, 0.04);
-    g.fillRect(x + 18, top + 18, Math.max(34, w * 0.28), GROUND_Y - top - 22);
+    g.fillRect(x + 18, top + 18, Math.max(40, w * 0.32), GROUND_Y - top - 22);
 
     this.drawStreetfrontRoof(x, top, w, spec);
 
@@ -469,37 +464,31 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     g.lineStyle(3, spec.accent, 0.38);
     g.lineBetween(x + 16, GROUND_Y - 34, x + w - 24, GROUND_Y - 34);
 
-    const colStep = spec.w < 190 ? 28 : spec.w > 300 ? 44 : 36;
-    const rowStep = spec.top < 80 ? 28 : spec.top > 115 ? 38 : 34;
     let row = 0;
-    for (let wy = top + 34; wy < GROUND_Y - 66; wy += rowStep) {
+    for (let wy = top + 34; wy < GROUND_Y - 62; wy += 34) {
       let col = 0;
-      for (let wx = x + 24; wx < x + w - 34; wx += colStep) {
+      for (let wx = x + 24; wx < x + w - 34; wx += 36) {
         const palette = [0xffd36b, 0x6ef7d2, 0xff5fbf, 0x8d5cff];
         const color = palette[(index * 3 + row + col * 2) % palette.length];
         const lit = (index + row * 2 + col) % 5 !== 1;
-        const ww = spec.w < 190 ? 12 : spec.w > 300 ? 22 : 16;
-        const wh = spec.top < 80 ? 18 : 14;
         g.fillStyle(lit ? color : 0x090719, lit ? 0.38 : 0.72);
-        g.fillRect(wx, wy, ww, wh);
+        g.fillRect(wx, wy, 16, 14);
         if (lit) {
           g.fillStyle(0xffffff, 0.12);
-          g.fillRect(wx + 3, wy + 2, Math.max(4, ww * 0.32), wh - 4);
+          g.fillRect(wx + 3, wy + 2, 5, 10);
         }
         col++;
       }
       row++;
     }
 
-    const shopInset = spec.shop === 'narrow' ? 34 : spec.shop === 'deep' ? 16 : 22;
-    const shopW = w - shopInset * 2;
-    const shopH = spec.shop === 'deep' ? 74 : 62;
+    const shopW = w - 58;
     g.fillStyle(0x100821, 1);
-    g.fillRoundedRect(x + shopInset, GROUND_Y - shopH - 20, shopW, shopH, 8);
+    g.fillRoundedRect(x + 22, GROUND_Y - 82, shopW, 62, 8);
     g.lineStyle(4, spec.trim, 0.62);
-    g.strokeRoundedRect(x + shopInset, GROUND_Y - shopH - 20, shopW, shopH, 8);
+    g.strokeRoundedRect(x + 22, GROUND_Y - 82, shopW, 62, 8);
     g.lineStyle(2, spec.accent, 0.6);
-    for (let sx = x + shopInset + 16; sx < x + shopInset + shopW - 22; sx += 28) g.lineBetween(sx, GROUND_Y - shopH - 14, sx + 14, GROUND_Y - 28);
+    for (let sx = x + 38; sx < x + w - 58; sx += 28) g.lineBetween(sx, GROUND_Y - 76, sx + 14, GROUND_Y - 28);
 
     g.fillStyle(spec.accent, 0.74);
     for (let bulb = x + 28; bulb < x + w - 26; bulb += 22) g.fillCircle(bulb, top + 16, 3.5);
@@ -507,21 +496,51 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     for (let strip = top + 46; strip < GROUND_Y - 104; strip += 58) g.fillRect(x + w - 18, strip, 6, 34);
   }
 
+  drawStreetfrontRoof(x, top, w, spec) {
+    const g = this.bg;
+    g.fillStyle(0x05040e, 0.96);
+    if (spec.roof === 'slant') {
+      g.beginPath();
+      g.moveTo(x + 6, top + 14);
+      g.lineTo(x + 44, top - 18);
+      g.lineTo(x + w - 18, top + 6);
+      g.lineTo(x + w - 18, top + 20);
+      g.lineTo(x + 6, top + 20);
+      g.closePath();
+      g.fillPath();
+    } else {
+      g.fillRect(x + 6, top - 10, w - 24, 22);
+    }
+
+    g.lineStyle(3, spec.trim, 0.36);
+    g.lineBetween(x + 14, top + 2, x + w - 26, top + 2);
+
+    if (spec.roof === 'antenna') {
+      g.lineStyle(3, spec.accent, 0.45);
+      g.lineBetween(x + w - 58, top - 10, x + w - 38, top - 52);
+      g.lineBetween(x + w - 38, top - 52, x + w - 18, top - 18);
+    } else if (spec.roof === 'pipes') {
+      g.lineStyle(5, spec.accent, 0.35);
+      g.lineBetween(x + 34, top - 10, x + 34, top - 34);
+      g.lineBetween(x + 34, top - 34, x + 92, top - 34);
+    } else if (spec.roof === 'stack') {
+      g.fillStyle(0x120820, 0.96);
+      g.fillRect(x + 36, top - 38, 34, 30);
+      g.fillRect(x + 84, top - 28, 48, 20);
+      g.lineStyle(2, spec.accent, 0.4);
+      g.lineBetween(x + 42, top - 30, x + 62, top - 30);
+      g.lineBetween(x + 92, top - 20, x + 122, top - 20);
+    }
+  }
+
   drawTokyoSigns() {
-    const span = this.streetfrontWidth;
-    const offset = (this.tick * this.speed * 0.34) % span;
     for (const sign of this.tokyoSigns) {
-      let visibleX = null;
-      for (let repeat = -1; repeat <= 1; repeat++) {
-        const x = sign.x + repeat * span - offset;
-        if (x + sign.w < -120 || x > W + 120) continue;
-        const pulse = 0.78 + Math.sin(this.tick * 0.08 + sign.x) * 0.16;
-        this.drawSignBuilding(sign, x);
-        this.drawSignFrame(sign, x, pulse);
-        visibleX = x;
-      }
-      const pulse = 0.78 + Math.sin(this.tick * 0.08 + sign.x) * 0.16;
-      this.positionSignLabels(sign, visibleX, pulse);
+      const x = sign.x - ((this.tick * this.speed * 0.28) % (W + 180));
+      const wrappedX = x < -170 ? x + W + 180 : x;
+      const pulse = 0.72 + Math.sin(this.tick * 0.08 + sign.x) * 0.18;
+      this.drawSignBuilding(sign, wrappedX);
+      this.drawSignFrame(sign, wrappedX, pulse);
+      this.positionSignLabels(sign, wrappedX, pulse);
     }
   }
 
@@ -612,20 +631,6 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       g.lineStyle(3, sign.accent, 0.55);
       g.lineBetween(x + 26, sign.y - 10, x + 46, sign.y);
       g.lineBetween(x + sign.w - 28, sign.y - 10, x + sign.w - 48, sign.y);
-    } else if (sign.style === 'mega') {
-      g.fillStyle(0x070512, 0.98);
-      g.fillRoundedRect(x, sign.y, sign.w, sign.h, 12);
-      g.fillStyle(sign.color, 0.24 + pulse * 0.3);
-      g.fillRoundedRect(x + 8, sign.y + 8, sign.w - 16, sign.h - 16, 10);
-      g.lineStyle(7, sign.color, pulse);
-      g.strokeRoundedRect(x + 4, sign.y + 4, sign.w - 8, sign.h - 8, 10);
-      g.lineStyle(3, sign.accent, 0.92);
-      g.strokeRoundedRect(x + 16, sign.y + 16, sign.w - 32, sign.h - 32, 8);
-      g.fillStyle(sign.accent, 0.9);
-      for (let bx = x + 16; bx < x + sign.w - 12; bx += 20) {
-        g.fillCircle(bx, sign.y + 8, 3.5);
-        g.fillCircle(bx, sign.y + sign.h - 8, 3.5);
-      }
     } else {
       g.fillStyle(0x100821, 0.98);
       g.fillRoundedRect(x, sign.y, sign.w, sign.h, 28);
@@ -641,7 +646,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   positionSignLabels(sign, x, pulse) {
     if (!sign.label) {
-      const fontSize = sign.text.length > 12 ? 16 : (sign.style === 'vertical' || sign.style === 'capsule' ? 22 : 23);
+      const fontSize = sign.style === 'vertical' || sign.style === 'capsule' ? 22 : 23;
       sign.label = this.add.text(0, 0, sign.text, {
         fontFamily: 'Arial Black, Arial, sans-serif',
         fontSize: `${fontSize}px`,
@@ -658,15 +663,14 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       }).setOrigin(0.5).setDepth(1);
     }
 
-    const visible = x !== null;
     sign.label
-      .setPosition((x ?? -999) + sign.w / 2, sign.y + sign.h * (sign.style === 'vertical' ? 0.42 : 0.48))
+      .setPosition(x + sign.w / 2, sign.y + sign.h * (sign.style === 'vertical' ? 0.42 : 0.48))
       .setAlpha(pulse)
-      .setVisible(visible);
+      .setVisible(true);
     sign.subLabel
-      .setPosition((x ?? -999) + sign.w / 2, sign.y + sign.h * (sign.style === 'vertical' ? 0.7 : 0.76))
+      .setPosition(x + sign.w / 2, sign.y + sign.h * (sign.style === 'vertical' ? 0.7 : 0.76))
       .setAlpha(0.72 + pulse * 0.24)
-      .setVisible(visible);
+      .setVisible(true);
   }
 
   drawRoad() {
