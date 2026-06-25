@@ -489,10 +489,6 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       }
     }
 
-    this.bg.lineStyle(3, 0x090719, 0.9);
-    this.bg.lineBetween(0, 148, W, 116);
-    this.bg.lineStyle(1, 0xffffff, 0.18);
-    this.bg.lineBetween(0, 146, W, 114);
   }
 
   drawStreetfrontBuilding(x, spec, index) {
@@ -530,6 +526,14 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       }
       row++;
     }
+
+    const shopW = w - 58;
+    g.fillStyle(0x100821, 1);
+    g.fillRoundedRect(x + 22, GROUND_Y - 82, shopW, 62, 8);
+    g.lineStyle(4, spec.trim, 0.62);
+    g.strokeRoundedRect(x + 22, GROUND_Y - 82, shopW, 62, 8);
+    g.lineStyle(2, spec.accent, 0.6);
+    for (let sx = x + 38; sx < x + w - 58; sx += 28) g.lineBetween(sx, GROUND_Y - 76, sx + 14, GROUND_Y - 28);
 
     g.fillStyle(spec.accent, 0.74);
     for (let bulb = x + 28; bulb < x + w - 26; bulb += 22) g.fillCircle(bulb, top + 16, 3.5);
