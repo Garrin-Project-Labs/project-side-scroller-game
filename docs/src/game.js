@@ -1,4 +1,5 @@
 import { RunnerAssets } from './assets.js';
+import { groundLanding, hitsHazard, hitsPickup, pickupHitbox, platformLanding, robotHitbox } from './collision-rules.js';
 import { createObstaclePatternState, nextObstacleSpawnDelay, nextObstacleSpec } from './obstacle-pattern.js';
 import { GameConfig } from './runner-tuning.js';
 import { TokyoSigns } from './tokyo-signs.js';
@@ -234,27 +235,20 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       this.robot.vy = Math.max(0, this.robot.vy);
     }
 
-    let landed = false;
+    let landing = null;
     for (const o of this.obstacles) {
-      if (o.kind !== 'platform') continue;
-      const wasAbove = previousY + this.robot.h <= o.y + 8;
-      const overlapsX = this.robot.x + this.robot.w - 8 > o.x && this.robot.x + 8 < o.x + o.w;
-      if (this.robot.vy >= 0 && wasAbove && overlapsX && this.robot.y + this.robot.h >= o.y) {
-        this.robot.y = o.y - this.robot.h;
-        this.robot.vy = 0;
-        this.robot.grounded = true;
-        landed = true;
-        break;
-      }
+      landing = platformLanding({ robot: this.robot, previousY, platform: o });
+      if (landing) break;
     }
 
-    if (!landed && this.robot.y >= GROUND_Y - this.robot.h) {
-      this.robot.y = GROUND_Y - this.robot.h;
-      this.robot.vy = 0;
-      this.robot.grounded = true;
-      landed = true;
+    landing ??= groundLanding(this.robot, GameConfig);
+    if (landing) {
+      this.robot.y = landing.y;
+      this.robot.vy = landing.vy;
+      this.robot.grounded = landing.grounded;
+    } else {
+      this.robot.grounded = false;
     }
-    if (!landed) this.robot.grounded = false;
     this.robot.blink = (this.robot.blink + 1) % 120;
   }
 
@@ -328,26 +322,18 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   // Collision seam: hazards end the run, pickups reward score, platforms are handled in updateRobot.
   handleRunnerCollisions() {
     if (this.gameOver) return;
-    const hit = this.robotHitbox();
+    const hit = robotHitbox(this.robot, GameConfig);
     for (const o of this.obstacles) {
-      if (o.kind === 'trench') {
-        if (this.overlap(hit, { x: o.x + 5, y: o.y - 5, w: o.w - 10, h: o.h + 10 })) this.endRunWithSplash();
-      }
-      if (o.kind === 'box' || o.kind === 'stackedBox') {
-        if (this.overlap(hit, { x: o.x + 4, y: o.y + 4, w: o.w - 8, h: o.h - 4 })) this.endRunWithSplash();
-      }
-      if (o.kind === 'slideBarrier') {
-        if (this.overlap(hit, { x: o.x + 6, y: o.y + 4, w: o.w - 12, h: o.h - 4 })) this.endRunWithSplash();
-      }
+      if (hitsHazard(hit, o)) this.endRunWithSplash();
     }
     for (const p of this.pickups) {
-      const y = p.y + Math.sin(p.bob) * 8;
-      if (this.overlap(hit, { ...p, y })) {
+      const pickupBox = pickupHitbox(p);
+      if (hitsPickup(hit, p)) {
         p.collected = true;
         p.sprite?.destroy();
         this.batteries++;
         this.score += 60;
-        this.addSparks(p.x + p.w / 2, y + p.h / 2, 0xffd95a, 16);
+        this.addSparks(p.x + p.w / 2, pickupBox.y + p.h / 2, 0xffd95a, 16);
       }
     }
   }
@@ -955,14 +941,6 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     }
   }
 
-  robotHitbox() {
-    if (this.robot.sliding) return { x: this.robot.x + 8, y: GROUND_Y - 28, w: ROBOT_H * 0.82, h: 24 };
-    return { x: this.robot.x + 10, y: this.robot.y + 8, w: this.robot.w - 20, h: this.robot.h - 8 };
-  }
-
-  overlap(a, b) {
-    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-  }
 }
 
 if (window.Phaser) {
