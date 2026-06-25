@@ -1,6 +1,8 @@
 import { RunnerAssets } from './assets.js';
+import { BestScoreStorage } from './best-score-storage.js';
 import { groundLanding, hitsHazard, hitsPickup, pickupHitbox, platformLanding, robotHitbox } from './collision-rules.js';
 import { createObstaclePatternState, nextObstacleSpawnDelay, nextObstacleSpec } from './obstacle-pattern.js';
+import { RunnerInput } from './runner-input.js';
 import { RunnerRenderer } from './runner-renderer.js';
 import { RunnerSpriteAdapter } from './runner-sprite-adapter.js';
 import { GameConfig } from './runner-tuning.js';
@@ -34,20 +36,14 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   create() {
-    this.best = Number(localStorage.getItem('robotBatteryRunnerBest') || 0);
-    this.keys = this.input.keyboard.addKeys('SPACE,UP,DOWN,SHIFT,W,S,R');
-    this.input.keyboard.on('keydown-SPACE', () => this.startJump());
-    this.input.keyboard.on('keydown-UP', () => this.startJump());
-    this.input.keyboard.on('keydown-W', () => this.startJump());
-    this.input.keyboard.on('keyup-SPACE', () => this.stopJump());
-    this.input.keyboard.on('keyup-UP', () => this.stopJump());
-    this.input.keyboard.on('keyup-W', () => this.stopJump());
-    this.input.keyboard.on('keydown-DOWN', () => this.startSlide());
-    this.input.keyboard.on('keydown-SHIFT', () => this.startSlide());
-    this.input.keyboard.on('keydown-S', () => this.startSlide());
-    this.input.on('pointerdown', () => this.startJump());
-    this.input.on('pointerup', () => this.stopJump());
-    this.input.on('pointerupoutside', () => this.stopJump());
+    this.bestScoreStorage = new BestScoreStorage(localStorage);
+    this.best = this.bestScoreStorage.load();
+    this.runnerInput = new RunnerInput(this, {
+      startJump: () => this.startJump(),
+      stopJump: () => this.stopJump(),
+      startSlide: () => this.startSlide(),
+    });
+    this.runnerInput.bind();
 
     this.bg = this.add.graphics();
     this.world = this.add.graphics();
@@ -205,7 +201,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   // Main loop order: tune speed/spawns, move the Runner World, resolve hazards, then draw.
   update() {
-    if (this.gameOver && Phaser.Input.Keyboard.JustDown(this.keys.R)) this.resetRun();
+    if (this.gameOver && this.runnerInput.restartPressed(Phaser.Input.Keyboard)) this.resetRun();
     this.tick++;
 
     if (!this.gameOver) {
@@ -359,7 +355,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     if (this.gameOver) return;
     this.gameOver = true;
     this.best = Math.max(this.best, Math.floor(this.score));
-    localStorage.setItem('robotBatteryRunnerBest', String(this.best));
+    this.bestScoreStorage.save(this.best);
     this.addSparks(this.robot.x + this.robot.w / 2, GROUND_Y - 4, 0x6aa8ff, 34);
     this.gameOverText.setText('ZAP-SPLASH!');
     this.restartText.setText(`Score ${Math.floor(this.score)} • Batteries ${this.batteries}\nPress Space, ↑, click, or R to run again`);
