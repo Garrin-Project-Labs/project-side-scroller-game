@@ -290,7 +290,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       if (nearPlatform || Math.random() < 0.45) this.obstacles.push(this.makeTexturedObstacle('stackedBox', W + 30, GROUND_Y - stackH, BOX_SIZE, stackH));
       else this.obstacles.push(this.makeTexturedObstacle('box', W + 30, GROUND_Y - BOX_SIZE, BOX_SIZE, BOX_SIZE));
     } else if (kind === 'slideBarrier') {
-      this.obstacles.push({ x: W + 30, y: GROUND_Y - 86, w: 86, h: 48, kind: 'slideBarrier' });
+      this.obstacles.push({ x: W + 30, y: GROUND_Y - 82, w: 70, h: 42, kind: 'slideBarrier' });
     } else {
       this.obstacles.push(this.makeTexturedObstacle('platform', W + 30, GROUND_Y - 62, 220, 62));
     }
@@ -912,17 +912,35 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   drawSlideBarrier(o) {
     const g = this.world;
-    g.fillStyle(0x090719, 0.92);
-    g.fillRoundedRect(o.x, o.y, o.w, o.h, 8);
-    g.fillStyle(0xff5fbf, 0.2);
-    g.fillRoundedRect(o.x - 10, o.y - 8, o.w + 20, o.h + 16, 12);
-    g.lineStyle(5, 0xff5fbf, 0.95);
-    g.lineBetween(o.x + 10, o.y + 10, o.x + o.w - 10, o.y + 10);
-    g.lineStyle(4, 0x9effff, 0.9);
-    g.lineBetween(o.x + 12, o.y + 26, o.x + o.w - 12, o.y + 26);
-    g.lineStyle(3, 0xffd36b, 0.75);
-    g.lineBetween(o.x + 8, GROUND_Y - 6, o.x + 22, o.y + o.h);
-    g.lineBetween(o.x + o.w - 8, GROUND_Y - 6, o.x + o.w - 22, o.y + o.h);
+    const left = o.x + 6;
+    const right = o.x + o.w - 6;
+    const top = o.y;
+    const bottom = o.y + o.h;
+    const beamY = o.y + 14;
+
+    g.fillStyle(0xff5fbf, 0.14);
+    g.fillCircle(left, beamY, 18);
+    g.fillCircle(right, beamY, 18);
+    g.fillRect(left, beamY - 8, right - left, 16);
+
+    g.lineStyle(8, 0x090719, 0.95);
+    g.lineBetween(left, top, left, bottom);
+    g.lineBetween(right, top, right, bottom);
+    g.lineBetween(left, beamY, right, beamY);
+
+    g.lineStyle(4, 0xff5fbf, 1);
+    g.lineBetween(left, top + 3, left, bottom);
+    g.lineBetween(right, top + 3, right, bottom);
+    g.lineBetween(left, beamY, right, beamY);
+
+    g.lineStyle(2, 0x9effff, 0.95);
+    g.lineBetween(left + 1, top + 4, left + 1, bottom - 2);
+    g.lineBetween(right - 1, top + 4, right - 1, bottom - 2);
+    g.lineBetween(left + 5, beamY - 1, right - 5, beamY - 1);
+
+    g.fillStyle(0xffd36b, 0.9);
+    g.fillCircle(left, bottom + 2, 4);
+    g.fillCircle(right, bottom + 2, 4);
   }
 
   drawWater(o) {
