@@ -900,10 +900,11 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   drawRobot() {
     const wobble = this.gameOver ? Math.sin(this.tick * 0.28) * 0.08 : 0;
     if (this.robot.sliding) {
+      const slideSquash = 0.54 + Math.sin(this.tick * 0.45) * 0.03;
       this.robotSprite
-        .setPosition(this.robot.x + 6, GROUND_Y - 27)
-        .setDisplaySize(ROBOT_H * 0.92, ROBOT_W * 0.62)
-        .setRotation(-Math.PI / 2)
+        .setPosition(this.robot.x + 16, GROUND_Y - ROBOT_H * slideSquash + 2)
+        .setDisplaySize(ROBOT_H * 0.78, ROBOT_H * slideSquash)
+        .setRotation(-1.18)
         .setAlpha(this.gameOver ? 0.88 : 1);
       this.drawSlideTrail();
       return;
@@ -916,13 +917,17 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   drawSlideTrail() {
-    this.effects.fillStyle(0x6ef7d2, 0.18);
-    this.effects.fillEllipse(this.robot.x + 36, GROUND_Y - 8, 88, 10);
-    this.effects.lineStyle(3, 0x9effff, 0.42);
-    for (let i = 0; i < 3; i++) {
-      const x = this.robot.x - 28 - i * 18 + ((this.tick * 2) % 12);
-      this.effects.lineBetween(x, GROUND_Y - 16 + i * 3, x + 18, GROUND_Y - 20 + i * 3);
+    this.effects.fillStyle(0x6ef7d2, 0.14);
+    this.effects.fillEllipse(this.robot.x + 42, GROUND_Y - 7, 96, 9);
+    this.effects.fillStyle(0xff5fbf, 0.08);
+    this.effects.fillEllipse(this.robot.x + 42, GROUND_Y - 14, 72, 6);
+    this.effects.lineStyle(3, 0x9effff, 0.38);
+    for (let i = 0; i < 4; i++) {
+      const x = this.robot.x - 36 - i * 16 + ((this.tick * 2.4) % 14);
+      this.effects.lineBetween(x, GROUND_Y - 15 + i * 2, x + 22, GROUND_Y - 19 + i * 2);
     }
+    this.effects.lineStyle(2, 0xff5fbf, 0.28);
+    this.effects.lineBetween(this.robot.x + 18, GROUND_Y - 34, this.robot.x + 86, GROUND_Y - 25);
   }
 
   drawObstacle(o) {
@@ -1019,7 +1024,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   robotHitbox() {
-    if (this.robot.sliding) return { x: this.robot.x + 8, y: GROUND_Y - 28, w: ROBOT_H * 0.82, h: 24 };
+    if (this.robot.sliding) return { x: this.robot.x + 16, y: GROUND_Y - 38, w: ROBOT_H * 0.72, h: 32 };
     return { x: this.robot.x + 10, y: this.robot.y + 8, w: this.robot.w - 20, h: this.robot.h - 8 };
   }
 
