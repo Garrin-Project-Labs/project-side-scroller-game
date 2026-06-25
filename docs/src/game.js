@@ -446,7 +446,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       { top: 146, w: 168, face: 0x24102a, trim: 0xff5fbf, accent: 0x8d5cff, roof: 'flat' },
       { top: 82, w: 250, face: 0x0f1f34, trim: 0x8d5cff, accent: 0xff73d4, roof: 'pipes' },
       { top: 118, w: 196, face: 0x2b183d, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' },
-      { top: 44, w: 154, face: 0x102b45, trim: 0x1ca7ff, accent: 0x9effff, roof: 'spire', windows: 'thin', shape: 'taper' },
+      { top: 44, w: 154, face: 0x102b45, trim: 0x1ca7ff, accent: 0x9effff, roof: 'spire', windows: 'thin', shape: 'taper', cut: 46 },
       { top: 138, w: 276, face: 0x271529, trim: 0xff5fbf, accent: 0xffd36b, roof: 'arcade', windows: 'wide', shape: 'dome' },
       { top: 76, w: 224, face: 0x0e2a28, trim: 0x6ef7d2, accent: 0xff73d4, roof: 'billboardTop', windows: 'grid', shape: 'stepped' },
       { top: 104, w: 188, face: 0x2d203b, trim: 0xffd36b, accent: 0x8d5cff, roof: 'vents', windows: 'thin' },
@@ -480,6 +480,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
     this.drawStreetfrontRoof(x, top, w, spec);
     this.drawBuildingShapeTrim(x, top, w, spec);
+    this.cutBuildingSilhouette(x, top, w, spec);
 
     g.lineStyle(5, spec.trim, 0.46);
     g.lineBetween(x + 12, top + 14, x + w - 20, top + 14);
@@ -529,8 +530,9 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
     if (spec.shape === 'taper') {
       g.beginPath();
-      g.moveTo(x + 28, top + 12);
-      g.lineTo(x + w - 28, top + 12);
+      const cut = spec.cut ?? 28;
+      g.moveTo(x + cut, top + 12);
+      g.lineTo(x + w - cut, top + 12);
       g.lineTo(x + w - 10, bottom);
       g.lineTo(x + 10, bottom);
       g.closePath();
@@ -563,8 +565,9 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     g.lineStyle(3, spec.trim, 0.34);
     const bottom = GROUND_Y + 8;
     if (spec.shape === 'taper') {
-      g.lineBetween(x + 28, top + 14, x + 10, bottom);
-      g.lineBetween(x + w - 28, top + 14, x + w - 10, bottom);
+      const cut = spec.cut ?? 28;
+      g.lineBetween(x + cut, top + 14, x + 10, bottom);
+      g.lineBetween(x + w - cut, top + 14, x + w - 10, bottom);
     } else if (spec.shape === 'dome') {
       g.strokeCircle(x + w / 2, top + 56, (w - 28) / 2);
     } else if (spec.shape === 'stepped') {
@@ -575,6 +578,28 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       g.strokeRect(x + 36, top + 10, w - 72, 76);
       g.strokeRect(x + 22, top + 76, w - 44, 86);
     }
+  }
+
+  cutBuildingSilhouette(x, top, w, spec) {
+    if (spec.shape !== 'taper') return;
+    const g = this.bg;
+    const bottom = GROUND_Y + 10;
+    const cut = spec.cut ?? 28;
+    g.fillStyle(0x120820, 0.96);
+    g.beginPath();
+    g.moveTo(x, top);
+    g.lineTo(x + cut - 2, top + 12);
+    g.lineTo(x + 8, bottom);
+    g.lineTo(x, bottom);
+    g.closePath();
+    g.fillPath();
+    g.beginPath();
+    g.moveTo(x + w, top);
+    g.lineTo(x + w - cut + 2, top + 12);
+    g.lineTo(x + w - 8, bottom);
+    g.lineTo(x + w, bottom);
+    g.closePath();
+    g.fillPath();
   }
 
   drawStreetfrontRoof(x, top, w, spec) {
