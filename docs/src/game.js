@@ -1,4 +1,5 @@
 import { RunnerAssets } from './assets.js';
+import { createObstaclePatternState, nextObstacleSpawnDelay, nextObstacleSpec } from './obstacle-pattern.js';
 import { GameConfig } from './runner-tuning.js';
 import { TokyoSigns } from './tokyo-signs.js';
 import { TokyoStreetfronts } from './tokyo-streetfronts.js';
@@ -14,12 +15,7 @@ const JUMP_POWER = GameConfig.jumpPower;
 const MAX_JUMP_HEIGHT = GameConfig.maxJumpHeight;
 const MAX_HELD_JUMP_FRAMES = GameConfig.maxHeldJumpFrames;
 const HELD_JUMP_GRAVITY_SCALE = GameConfig.heldJumpGravityScale;
-const OBSTACLE_GAP_PIXELS = GameConfig.obstacleGapPixels;
 const BATTERY_GAP_PIXELS = GameConfig.batteryGapPixels;
-const TRENCH_WIDTHS = GameConfig.trenchWidths;
-const BOX_HEIGHTS = GameConfig.boxHeights;
-const BOX_SIZE = GameConfig.boxSize;
-const OBSTACLE_PATTERN = GameConfig.obstaclePattern;
 const MILESTONE_SCORE_STEP = GameConfig.milestoneScoreStep;
 const DISTRICT_PALETTES = GameConfig.districtPalettes;
 
@@ -129,7 +125,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.heldJumpFrames = 0;
     this.spawnTimer = Math.round(560 / this.speed);
     this.batteryTimer = Math.round(820 / this.speed);
-    this.obstaclePatternIndex = 0;
+    this.obstaclePattern = createObstaclePatternState();
     this.obstacles = [];
     this.pickups = [];
     this.sparks = [];
@@ -264,37 +260,28 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   // Obstacle Pattern seam: change the pattern/timing here without touching collision or drawing.
   spawnNextObstacle() {
-    const kind = OBSTACLE_PATTERN[this.obstaclePatternIndex % OBSTACLE_PATTERN.length];
-    this.obstaclePatternIndex++;
-    if (kind === 'trench') {
-      const w = this.obstaclePatternIndex === 1 ? GameConfig.firstTrenchWidth : TRENCH_WIDTHS[this.obstaclePatternIndex % TRENCH_WIDTHS.length];
-      this.obstacles.push({ x: W + 30, y: GROUND_Y - 2, w, h: 54, kind: 'trench' });
-    } else if (kind === 'box') {
-      const h = BOX_HEIGHTS[this.obstaclePatternIndex % BOX_HEIGHTS.length];
-      this.obstacles.push(this.makeTexturedObstacle('box', W + 30, GROUND_Y - h, 64, h));
-    } else if (kind === 'stackedBox') {
-      const stackH = BOX_SIZE * 2;
-      const nearPlatform = this.obstacles.some(o => o.kind === 'platform' && o.x > W - 260);
-      if (nearPlatform || Math.random() < 0.45) this.obstacles.push(this.makeTexturedObstacle('stackedBox', W + 30, GROUND_Y - stackH, BOX_SIZE, stackH));
-      else this.obstacles.push(this.makeTexturedObstacle('box', W + 30, GROUND_Y - BOX_SIZE, 64, BOX_SIZE));
-    } else if (kind === 'slideBarrier') {
-      this.obstacles.push({ x: W + 30, y: GROUND_Y - 176, w: 56, h: 136, kind: 'slideBarrier' });
-    } else {
-      this.obstacles.push(this.makeTexturedObstacle('platform', W + 30, GROUND_Y - 62, 220, 62));
-    }
-
-    const patternOffset = this.obstaclePatternIndex % 3 === 0 ? 90 : 0;
-    this.spawnTimer = Math.round((OBSTACLE_GAP_PIXELS + patternOffset) / this.speed);
+    const obstacle = nextObstacleSpec({
+      patternState: this.obstaclePattern,
+      tuning: GameConfig,
+      worldWidth: W,
+      groundY: GROUND_Y,
+      currentObstacles: this.obstacles,
+    });
+    this.obstacles.push(this.makeTexturedObstacle(obstacle));
+    this.spawnTimer = nextObstacleSpawnDelay({ patternState: this.obstaclePattern, tuning: GameConfig, speed: this.speed });
   }
 
-  makeTexturedObstacle(kind, x, y, w, h) {
-    const texture = kind === 'platform' ? 'platform' : 'crate';
-    const sprite = this.add.image(x, y, texture).setOrigin(0, 0).setDisplaySize(w, h).setDepth(kind === 'platform' ? 3 : 4);
-    return { x, y, w, h, kind, sprite };
+  makeTexturedObstacle(obstacle) {
+    if (!obstacle.texture) return obstacle;
+    const sprite = this.add.image(obstacle.x, obstacle.y, obstacle.texture)
+      .setOrigin(0, 0)
+      .setDisplaySize(obstacle.w, obstacle.h)
+      .setDepth(obstacle.depth);
+    return { ...obstacle, sprite };
   }
 
   spawnNextBattery() {
-    const high = this.obstaclePatternIndex % 2 === 0;
+    const high = this.obstaclePattern.index % 2 === 0;
     const x = W + 40;
     const y = high ? GROUND_Y - 168 : GROUND_Y - 112;
     const sprite = this.add.image(x, y, 'battery').setOrigin(0, 0).setDisplaySize(34, 50).setDepth(5);
