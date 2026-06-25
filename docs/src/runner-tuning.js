@@ -1,0 +1,32 @@
+// Runner Tuning: all feel/difficulty numbers live here so gameplay tweaks stay local.
+export const GameConfig = Object.freeze({
+  width: 960,
+  height: 540,
+  groundY: 430,
+  startSpeed: 1.36,
+  maxSpeed: 9.4,
+  baseSpeedRamp: 0.00062,
+  timeSpeedRamp: 0.000000021,
+  robotX: 128,
+  robotWidth: 58,
+  robotHeight: 78,
+  gravity: 0.54,
+  jumpPower: -12.4,
+  maxJumpHeight: 168,
+  maxHeldJumpFrames: 60,
+  heldJumpGravityScale: 0.12,
+  obstacleGapPixels: 650,
+  batteryGapPixels: 1120,
+  firstTrenchWidth: 72,
+  trenchWidths: [92, 116, 104, 132, 108],
+  boxHeights: [54, 62, 50],
+  boxSize: 58,
+  milestoneScoreStep: 2500,
+  districtPalettes: [
+    { name: 'District 1', top: 0x120820, mid: 0x321551, bottom: 0x050612, moon: 0xff73d4, glow: 0x8d5cff },
+    { name: 'District 2', top: 0x061731, mid: 0x123a66, bottom: 0x050914, moon: 0x6ef7d2, glow: 0x1ca7ff },
+    { name: 'District 3', top: 0x230816, mid: 0x592049, bottom: 0x080511, moon: 0xffd36b, glow: 0xff5fbf },
+    { name: 'District 4', top: 0x0b1028, mid: 0x331b68, bottom: 0x050612, moon: 0x9effff, glow: 0xff73d4 }
+  ],
+  obstaclePattern: ['trench', 'box', 'slideBarrier', 'platform', 'stackedBox', 'trench', 'box', 'slideBarrier', 'trench', 'platform'],
+});

@@ -1,35 +1,7 @@
-// Runner Tuning: all feel/difficulty numbers live here so gameplay tweaks stay local.
-const GameConfig = Object.freeze({
-  width: 960,
-  height: 540,
-  groundY: 430,
-  startSpeed: 1.36,
-  maxSpeed: 9.4,
-  baseSpeedRamp: 0.00062,
-  timeSpeedRamp: 0.000000021,
-  robotX: 128,
-  robotWidth: 58,
-  robotHeight: 78,
-  gravity: 0.54,
-  jumpPower: -12.4,
-  maxJumpHeight: 168,
-  maxHeldJumpFrames: 60,
-  heldJumpGravityScale: 0.12,
-  obstacleGapPixels: 650,
-  batteryGapPixels: 1120,
-  firstTrenchWidth: 72,
-  trenchWidths: [92, 116, 104, 132, 108],
-  boxHeights: [54, 62, 50],
-  boxSize: 58,
-  milestoneScoreStep: 2500,
-  districtPalettes: [
-    { name: 'District 1', top: 0x120820, mid: 0x321551, bottom: 0x050612, moon: 0xff73d4, glow: 0x8d5cff },
-    { name: 'District 2', top: 0x061731, mid: 0x123a66, bottom: 0x050914, moon: 0x6ef7d2, glow: 0x1ca7ff },
-    { name: 'District 3', top: 0x230816, mid: 0x592049, bottom: 0x080511, moon: 0xffd36b, glow: 0xff5fbf },
-    { name: 'District 4', top: 0x0b1028, mid: 0x331b68, bottom: 0x050612, moon: 0x9effff, glow: 0xff73d4 }
-  ],
-  obstaclePattern: ['trench', 'box', 'slideBarrier', 'platform', 'stackedBox', 'trench', 'box', 'slideBarrier', 'trench', 'platform'],
-});
+import { RunnerAssets } from './assets.js';
+import { GameConfig } from './runner-tuning.js';
+import { TokyoSigns } from './tokyo-signs.js';
+import { TokyoStreetfronts } from './tokyo-streetfronts.js';
 
 const W = GameConfig.width;
 const H = GameConfig.height;
@@ -59,10 +31,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.svg('robot', 'src/assets/robot.svg', { width: 128, height: 188 });
-    this.load.svg('battery', 'src/assets/battery.svg', { width: 136, height: 200 });
-    this.load.svg('crate', 'src/assets/crate.svg', { width: 176, height: 176 });
-    this.load.svg('platform', 'src/assets/platform.svg', { width: 880, height: 248 });
+    for (const asset of RunnerAssets) this.load.svg(asset.key, asset.path, asset.svg);
   }
 
   create() {
@@ -179,23 +148,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       s: 0.45 + (i % 5) * 0.12,
       phase: i * 0.71
     }));
-    this.tokyoSigns = [
-      { layer: 'front', style: 'ramen', x: 90, y: 166, w: 142, h: 58, color: 0xff4fc3, accent: 0xffd36b, text: 'RAMEN', subText: 'NOODLES' },
-      { layer: 'front', style: 'vertical', x: 430, y: 122, w: 76, h: 112, color: 0xff5fbf, accent: 0x6ef7d2, text: '24H', subText: 'OPEN' },
-      { layer: 'back', style: 'billboard', x: 720, y: 150, w: 122, h: 48, color: 0x6ef7d2, accent: 0x8d5cff, text: 'ROBO', subText: 'PARTS' },
-      { layer: 'front', style: 'capsule', x: 1060, y: 110, w: 92, h: 118, color: 0x8d5cff, accent: 0xff73d4, text: 'NEON', subText: 'CLUB' },
-      { layer: 'front', style: 'billboard', x: 1390, y: 164, w: 132, h: 58, color: 0x1ca7ff, accent: 0x9effff, text: 'IDGF', subText: '' },
-      { layer: 'back', style: 'vertical', x: 1740, y: 104, w: 70, h: 104, color: 0xffd36b, accent: 0xff73d4, text: 'KAI', subText: 'BAR' },
-      { layer: 'front', style: 'billboard', x: 2070, y: 178, w: 148, h: 50, color: 0xff73d4, accent: 0xffd36b, text: 'PIXEL', subText: 'SHOP' },
-      { layer: 'back', style: 'capsule', x: 2420, y: 92, w: 84, h: 106, color: 0x6ef7d2, accent: 0x1ca7ff, text: 'MTR', subText: 'LINE' },
-      { layer: 'front', style: 'ramen', x: 2760, y: 170, w: 132, h: 54, color: 0xffd36b, accent: 0xff4fc3, text: 'SUSHI', subText: 'NIGHT' },
-      { layer: 'back', style: 'billboard', x: 3130, y: 134, w: 120, h: 46, color: 0x8d5cff, accent: 0x6ef7d2, text: 'BYTE', subText: 'CAFE' },
-      { layer: 'front', style: 'vertical', x: 3490, y: 126, w: 72, h: 112, color: 0x1ca7ff, accent: 0x9effff, text: 'ARC', subText: 'ADE' },
-      { layer: 'back', style: 'billboard', x: 3850, y: 152, w: 140, h: 50, color: 0xff5fbf, accent: 0xffd36b, text: 'NOVA', subText: 'MART' },
-      { layer: 'front', style: 'capsule', x: 4210, y: 116, w: 94, h: 112, color: 0xff73d4, accent: 0x8d5cff, text: 'VIBE', subText: 'ROOM' },
-      { layer: 'back', style: 'vertical', x: 4580, y: 96, w: 76, h: 108, color: 0x6ef7d2, accent: 0xffd36b, text: 'BOT', subText: 'LAB' },
-      { layer: 'front', style: 'billboard', x: 4930, y: 176, w: 150, h: 52, color: 0xffd36b, accent: 0xff5fbf, text: 'MOON', subText: 'TAXI' }
-    ];
+    this.tokyoSigns = TokyoSigns.map(sign => ({ ...sign }));
     this.gameOverText.setText('');
     this.restartText.setText('');
     this.milestoneText.setText('');
@@ -493,23 +446,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   drawNearTokyoStreetfront() {
     const segment = 190;
-    const fronts = [
-      { top: 88, w: 248, face: 0x22133e, trim: 0x6ef7d2, accent: 0xff73d4, roof: 'flat' },
-      { top: 126, w: 226, face: 0x17102f, trim: 0xff5fbf, accent: 0xffd36b, roof: 'antenna' },
-      { top: 72, w: 238, face: 0x281440, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' },
-      { top: 112, w: 254, face: 0x101b37, trim: 0x8d5cff, accent: 0xff5fbf, roof: 'pipes' },
-      { top: 98, w: 216, face: 0x2a102d, trim: 0xff73d4, accent: 0x6ef7d2, roof: 'stack' },
-      { top: 58, w: 182, face: 0x132642, trim: 0x6ef7d2, accent: 0xffd36b, roof: 'antenna' },
-      { top: 146, w: 168, face: 0x24102a, trim: 0xff5fbf, accent: 0x8d5cff, roof: 'flat' },
-      { top: 82, w: 250, face: 0x0f1f34, trim: 0x8d5cff, accent: 0xff73d4, roof: 'pipes' },
-      { top: 118, w: 196, face: 0x2b183d, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' },
-      { top: 44, w: 154, face: 0x102b45, trim: 0x1ca7ff, accent: 0x9effff, roof: 'spire', windows: 'thin', shape: 'taper', cut: 46 },
-      { top: 138, w: 276, face: 0x271529, trim: 0xff5fbf, accent: 0xffd36b, roof: 'flat', windows: 'wide' },
-      { top: 76, w: 224, face: 0x0e2a28, trim: 0x6ef7d2, accent: 0xff73d4, roof: 'billboardTop', windows: 'grid', shape: 'stepped' },
-      { top: 104, w: 188, face: 0x2d203b, trim: 0xffd36b, accent: 0x8d5cff, roof: 'vents', windows: 'thin' },
-      { top: 62, w: 258, face: 0x151538, trim: 0x8d5cff, accent: 0x6ef7d2, roof: 'antenna', windows: 'wide' },
-      { top: 132, w: 142, face: 0x2b1028, trim: 0xff73d4, accent: 0x1ca7ff, roof: 'stack', windows: 'grid', shape: 'skinnyStack' }
-    ];
+    const fronts = TokyoStreetfronts;
     const stripWidth = segment * fronts.length;
     const offset = (this.tick * this.speed * 0.34) % stripWidth;
 
