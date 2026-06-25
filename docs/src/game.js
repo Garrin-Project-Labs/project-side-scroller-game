@@ -81,7 +81,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       stroke: '#07101d',
       strokeThickness: 8
     }).setOrigin(0.5).setDepth(40);
-    this.startControlsText = this.add.text(318, 220, 'BUTTONS\nJump: Space / ↑ / W / click\nHold jump to clear long gaps\n\nSlide: Down / Shift / S\nDuck under laser gates', {
+    this.startControlsText = this.add.text(318, 220, 'BUTTONS\nJump: Space / ↑ / W / click\nHold jump to clear long gaps\nSlide: Down / Shift / S\nDuck under laser gates', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '20px',
       color: '#ffffff',
@@ -90,7 +90,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       stroke: '#07101d',
       strokeThickness: 5
     }).setOrigin(0.5).setDepth(40);
-    this.startTrapsText = this.add.text(642, 220, 'TRAPS\nGaps: jump over them\nCrates: hop over or onto them\n\nLaser gates: slide under\nBatteries: grab for bonus score', {
+    this.startTrapsText = this.add.text(642, 220, 'TRAPS\nGaps: jump over them\nCrates: hop over or onto them\nLaser gates: slide under\nBatteries: grab for bonus score', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '20px',
       color: '#ffffff',
