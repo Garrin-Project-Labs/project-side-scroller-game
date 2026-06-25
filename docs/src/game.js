@@ -901,10 +901,11 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     const wobble = this.gameOver ? Math.sin(this.tick * 0.28) * 0.08 : 0;
     if (this.robot.sliding) {
       this.robotSprite
-        .setPosition(this.robot.x + 6, GROUND_Y - 24)
-        .setDisplaySize(ROBOT_H * 0.9, ROBOT_W * 0.7)
-        .setRotation(-0.18)
+        .setPosition(this.robot.x + 6, GROUND_Y - 27)
+        .setDisplaySize(ROBOT_H * 0.92, ROBOT_W * 0.62)
+        .setRotation(-Math.PI / 2)
         .setAlpha(this.gameOver ? 0.88 : 1);
+      this.drawSlideTrail();
       return;
     }
     this.robotSprite
@@ -914,6 +915,16 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       .setAlpha(this.gameOver ? 0.88 : 1);
   }
 
+  drawSlideTrail() {
+    this.effects.fillStyle(0x6ef7d2, 0.18);
+    this.effects.fillEllipse(this.robot.x + 36, GROUND_Y - 8, 88, 10);
+    this.effects.lineStyle(3, 0x9effff, 0.42);
+    for (let i = 0; i < 3; i++) {
+      const x = this.robot.x - 28 - i * 18 + ((this.tick * 2) % 12);
+      this.effects.lineBetween(x, GROUND_Y - 16 + i * 3, x + 18, GROUND_Y - 20 + i * 3);
+    }
+  }
+
   drawObstacle(o) {
     if (o.kind === 'water') return this.drawWater(o);
     if (o.kind === 'slideBarrier') return this.drawSlideBarrier(o);
@@ -921,35 +932,42 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   drawSlideBarrier(o) {
     const g = this.world;
-    const left = o.x + 6;
-    const right = o.x + o.w - 6;
-    const top = o.y;
+    const left = o.x + 4;
+    const right = o.x + o.w - 4;
+    const top = o.y + 2;
     const bottom = o.y + o.h;
-    const beamY = o.y + 14;
+    const beamY = o.y + 18;
+    const pulse = 0.82 + Math.sin(this.tick * 0.18 + o.x * 0.03) * 0.14;
 
-    g.fillStyle(0xff5fbf, 0.14);
-    g.fillCircle(left, beamY, 18);
-    g.fillCircle(right, beamY, 18);
-    g.fillRect(left, beamY - 8, right - left, 16);
+    g.fillStyle(0xff5fbf, 0.12 * pulse);
+    g.fillCircle(left, beamY, 22);
+    g.fillCircle(right, beamY, 22);
+    g.fillRect(left, beamY - 10, right - left, 20);
 
-    g.lineStyle(8, 0x090719, 0.95);
-    g.lineBetween(left, top, left, bottom);
-    g.lineBetween(right, top, right, bottom);
-    g.lineBetween(left, beamY, right, beamY);
+    g.fillStyle(0x080613, 0.96);
+    g.fillRoundedRect(left - 7, top, 14, bottom - top + 6, 5);
+    g.fillRoundedRect(right - 7, top, 14, bottom - top + 6, 5);
+    g.lineStyle(2, 0xffd36b, 0.65);
+    g.strokeRoundedRect(left - 7, bottom - 6, 14, 12, 4);
+    g.strokeRoundedRect(right - 7, bottom - 6, 14, 12, 4);
 
-    g.lineStyle(4, 0xff5fbf, 1);
-    g.lineBetween(left, top + 3, left, bottom);
-    g.lineBetween(right, top + 3, right, bottom);
-    g.lineBetween(left, beamY, right, beamY);
+    g.lineStyle(9, 0xff5fbf, 0.2 * pulse);
+    g.lineBetween(left + 7, beamY, right - 7, beamY);
+    g.lineStyle(5, 0xff5fbf, 0.95 * pulse);
+    g.lineBetween(left + 8, beamY, right - 8, beamY);
+    g.lineStyle(2, 0x9effff, 1);
+    g.lineBetween(left + 10, beamY - 1, right - 10, beamY - 1);
 
-    g.lineStyle(2, 0x9effff, 0.95);
-    g.lineBetween(left + 1, top + 4, left + 1, bottom - 2);
-    g.lineBetween(right - 1, top + 4, right - 1, bottom - 2);
-    g.lineBetween(left + 5, beamY - 1, right - 5, beamY - 1);
+    g.lineStyle(3, 0xff5fbf, 0.9);
+    g.lineBetween(left, top + 4, left, bottom);
+    g.lineBetween(right, top + 4, right, bottom);
+    g.lineStyle(1, 0x9effff, 0.9);
+    g.lineBetween(left + 2, top + 8, left + 2, bottom - 4);
+    g.lineBetween(right - 2, top + 8, right - 2, bottom - 4);
 
-    g.fillStyle(0xffd36b, 0.9);
-    g.fillCircle(left, bottom + 2, 4);
-    g.fillCircle(right, bottom + 2, 4);
+    g.fillStyle(0xffd36b, 0.95);
+    g.fillCircle(left, beamY, 4);
+    g.fillCircle(right, beamY, 4);
   }
 
   drawWater(o) {
