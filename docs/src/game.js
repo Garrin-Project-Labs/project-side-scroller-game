@@ -18,10 +18,10 @@ const GameConfig = Object.freeze({
   obstacleGapPixels: 650,
   batteryGapPixels: 1120,
   firstWaterWidth: 48,
-  waterWidths: [78, 96, 84, 116, 88],
+  trenchWidths: [78, 96, 84, 116, 88],
   boxHeights: [38, 46, 34],
   boxSize: 44,
-  obstaclePattern: ['water', 'box', 'slideBarrier', 'platform', 'stackedBox', 'water', 'box', 'slideBarrier', 'water', 'platform'],
+  obstaclePattern: ['trench', 'box', 'slideBarrier', 'platform', 'stackedBox', 'trench', 'box', 'slideBarrier', 'trench', 'platform'],
 });
 
 const W = GameConfig.width;
@@ -37,7 +37,7 @@ const MAX_HELD_JUMP_FRAMES = GameConfig.maxHeldJumpFrames;
 const HELD_JUMP_GRAVITY_SCALE = GameConfig.heldJumpGravityScale;
 const OBSTACLE_GAP_PIXELS = GameConfig.obstacleGapPixels;
 const BATTERY_GAP_PIXELS = GameConfig.batteryGapPixels;
-const WATER_WIDTHS = GameConfig.waterWidths;
+const TRENCH_WIDTHS = GameConfig.trenchWidths;
 const BOX_HEIGHTS = GameConfig.boxHeights;
 const BOX_SIZE = GameConfig.boxSize;
 const OBSTACLE_PATTERN = GameConfig.obstaclePattern;
@@ -281,9 +281,9 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   spawnNextObstacle() {
     const kind = OBSTACLE_PATTERN[this.obstaclePatternIndex % OBSTACLE_PATTERN.length];
     this.obstaclePatternIndex++;
-    if (kind === 'water') {
-      const w = this.obstaclePatternIndex === 1 ? GameConfig.firstWaterWidth : WATER_WIDTHS[this.obstaclePatternIndex % WATER_WIDTHS.length];
-      this.obstacles.push({ x: W + 30, y: GROUND_Y - 2, w, h: 54, kind: 'water' });
+    if (kind === 'trench') {
+      const w = this.obstaclePatternIndex === 1 ? GameConfig.firstWaterWidth : TRENCH_WIDTHS[this.obstaclePatternIndex % TRENCH_WIDTHS.length];
+      this.obstacles.push({ x: W + 30, y: GROUND_Y - 2, w, h: 54, kind: 'trench' });
     } else if (kind === 'box') {
       const h = BOX_HEIGHTS[this.obstaclePatternIndex % BOX_HEIGHTS.length];
       this.obstacles.push(this.makeTexturedObstacle('box', W + 30, GROUND_Y - h, 48, h));
@@ -358,7 +358,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     if (this.gameOver) return;
     const hit = this.robotHitbox();
     for (const o of this.obstacles) {
-      if (o.kind === 'water') {
+      if (o.kind === 'trench') {
         if (this.overlap(hit, { x: o.x + 5, y: o.y - 5, w: o.w - 10, h: o.h + 10 })) this.endRunWithSplash();
       }
       if (o.kind === 'box' || o.kind === 'stackedBox') {
@@ -863,13 +863,8 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     const g = this.world;
     g.fillStyle(0x050611, 1);
     g.fillRect(0, GROUND_Y, W, H - GROUND_Y);
-    g.fillGradientStyle(0x26223a, 0x26223a, 0x070811, 0x070811, 1);
-    g.fillRect(0, GROUND_Y + 10, W, H - GROUND_Y - 10);
-
-    g.fillStyle(0xff4fc3, 1);
-    g.fillRect(0, GROUND_Y, W, 5);
-    g.fillStyle(0x6ef7d2, 0.9);
-    g.fillRect(0, GROUND_Y + 5, W, 4);
+    g.fillStyle(0xff4fc3, 0.85);
+    g.fillRect(0, GROUND_Y, W, 3);
 
     g.lineStyle(2, 0xffffff, 0.1);
     for (let y = GROUND_Y + 22; y < H; y += 24) g.lineBetween(0, y, W, y + 10);
@@ -915,7 +910,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   drawObstacle(o) {
-    if (o.kind === 'water') return this.drawWater(o);
+    if (o.kind === 'trench') return this.drawTrench(o);
     if (o.kind === 'slideBarrier') return this.drawSlideBarrier(o);
   }
 
@@ -961,7 +956,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     g.strokeRoundedRect(right - 7, bottom - 6, 14, 12, 4);
   }
 
-  drawWater(o) {
+  drawTrench(o) {
     const g = this.world;
     g.fillStyle(0x090719, 1);
     g.beginPath();
