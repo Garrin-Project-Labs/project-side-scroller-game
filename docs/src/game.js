@@ -17,10 +17,10 @@ const GameConfig = Object.freeze({
   heldJumpGravityScale: 0.12,
   obstacleGapPixels: 650,
   batteryGapPixels: 1120,
-  firstWaterWidth: 48,
-  trenchWidths: [78, 96, 84, 116, 88],
-  boxHeights: [38, 46, 34],
-  boxSize: 44,
+  firstTrenchWidth: 72,
+  trenchWidths: [92, 116, 104, 132, 108],
+  boxHeights: [54, 62, 50],
+  boxSize: 58,
   obstaclePattern: ['trench', 'box', 'slideBarrier', 'platform', 'stackedBox', 'trench', 'box', 'slideBarrier', 'trench', 'platform'],
 });
 
@@ -282,16 +282,16 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     const kind = OBSTACLE_PATTERN[this.obstaclePatternIndex % OBSTACLE_PATTERN.length];
     this.obstaclePatternIndex++;
     if (kind === 'trench') {
-      const w = this.obstaclePatternIndex === 1 ? GameConfig.firstWaterWidth : TRENCH_WIDTHS[this.obstaclePatternIndex % TRENCH_WIDTHS.length];
+      const w = this.obstaclePatternIndex === 1 ? GameConfig.firstTrenchWidth : TRENCH_WIDTHS[this.obstaclePatternIndex % TRENCH_WIDTHS.length];
       this.obstacles.push({ x: W + 30, y: GROUND_Y - 2, w, h: 54, kind: 'trench' });
     } else if (kind === 'box') {
       const h = BOX_HEIGHTS[this.obstaclePatternIndex % BOX_HEIGHTS.length];
-      this.obstacles.push(this.makeTexturedObstacle('box', W + 30, GROUND_Y - h, 48, h));
+      this.obstacles.push(this.makeTexturedObstacle('box', W + 30, GROUND_Y - h, 64, h));
     } else if (kind === 'stackedBox') {
       const stackH = BOX_SIZE * 2;
       const nearPlatform = this.obstacles.some(o => o.kind === 'platform' && o.x > W - 260);
       if (nearPlatform || Math.random() < 0.45) this.obstacles.push(this.makeTexturedObstacle('stackedBox', W + 30, GROUND_Y - stackH, BOX_SIZE, stackH));
-      else this.obstacles.push(this.makeTexturedObstacle('box', W + 30, GROUND_Y - BOX_SIZE, BOX_SIZE, BOX_SIZE));
+      else this.obstacles.push(this.makeTexturedObstacle('box', W + 30, GROUND_Y - BOX_SIZE, 64, BOX_SIZE));
     } else if (kind === 'slideBarrier') {
       this.obstacles.push({ x: W + 30, y: GROUND_Y - 176, w: 56, h: 136, kind: 'slideBarrier' });
     } else {
@@ -958,35 +958,26 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   drawTrench(o) {
     const g = this.world;
-    g.fillStyle(0x090719, 1);
-    g.beginPath();
-    g.moveTo(o.x, o.y);
-    g.lineTo(o.x + o.w, o.y);
-    g.lineTo(o.x + o.w - 12, o.y + o.h);
-    g.lineTo(o.x + 12, o.y + o.h);
-    g.closePath();
-    g.fillPath();
-    g.fillGradientStyle(0xff7adf, 0xff7adf, 0x4b1fff, 0x4b1fff, 1);
-    g.beginPath();
-    g.moveTo(o.x + 10, o.y + 16);
-    g.lineTo(o.x + o.w - 10, o.y + 16);
-    g.lineTo(o.x + o.w - 20, o.y + o.h - 6);
-    g.lineTo(o.x + 20, o.y + o.h - 6);
-    g.closePath();
-    g.fillPath();
-    g.lineStyle(4, 0x9efff1, 0.95);
-    g.beginPath();
-    for (let x = 14; x < o.w - 20; x += 18) {
-      const sy = o.y + 14 + Math.sin((this.tick + x) * 0.12) * 3;
-      const ey = o.y + 14 + Math.sin((this.tick + x + 16) * 0.12) * 3;
-      g.moveTo(o.x + x, sy);
-      g.lineTo(o.x + x + 8, o.y + 8);
-      g.lineTo(o.x + x + 16, ey);
+    const top = GROUND_Y + 2;
+    const bottom = GROUND_Y + 50;
+
+    g.fillStyle(0x03050c, 1);
+    g.fillRect(o.x, top, o.w, bottom - top);
+    g.fillGradientStyle(0x070811, 0x070811, 0x31114a, 0x31114a, 1);
+    g.fillRect(o.x + 8, top + 8, o.w - 16, bottom - top - 12);
+
+    g.lineStyle(5, 0xffd36b, 0.95);
+    g.lineBetween(o.x - 6, top, o.x + 18, top);
+    g.lineBetween(o.x + o.w - 18, top, o.x + o.w + 6, top);
+    g.lineStyle(3, 0x6ef7d2, 0.85);
+    g.lineBetween(o.x + 10, top + 9, o.x + o.w - 10, top + 9);
+
+    g.lineStyle(4, 0xff5fbf, 0.78);
+    for (let x = 18; x < o.w - 18; x += 24) {
+      g.lineBetween(o.x + x, top + 15, o.x + x - 8, bottom - 8);
     }
-    g.strokePath();
-    g.lineStyle(6, 0xff5fbf, 1);
-    g.lineBetween(o.x - 4, o.y + 1, o.x + 10, o.y + 1);
-    g.lineBetween(o.x + o.w - 10, o.y + 1, o.x + o.w + 4, o.y + 1);
+    g.fillStyle(0xff5fbf, 0.16);
+    g.fillRect(o.x + 8, top + 12, o.w - 16, 18);
   }
 
   drawSparks() {
