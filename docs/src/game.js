@@ -206,7 +206,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   startSlide() {
     if (this.gameOver || !this.robot.grounded || this.robot.sliding) return;
     this.robot.sliding = true;
-    this.robot.slideFrames = 42;
+    this.robot.slideFrames = 62;
     this.addSparks(this.robot.x + 8, GROUND_Y - 6, 0x1ca7ff, 10);
   }
 
@@ -290,7 +290,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       if (nearPlatform || Math.random() < 0.45) this.obstacles.push(this.makeTexturedObstacle('stackedBox', W + 30, GROUND_Y - stackH, BOX_SIZE, stackH));
       else this.obstacles.push(this.makeTexturedObstacle('box', W + 30, GROUND_Y - BOX_SIZE, BOX_SIZE, BOX_SIZE));
     } else if (kind === 'slideBarrier') {
-      this.obstacles.push({ x: W + 30, y: GROUND_Y - 82, w: 70, h: 42, kind: 'slideBarrier' });
+      this.obstacles.push({ x: W + 30, y: GROUND_Y - 84, w: 56, h: 42, kind: 'slideBarrier' });
     } else {
       this.obstacles.push(this.makeTexturedObstacle('platform', W + 30, GROUND_Y - 62, 220, 62));
     }
@@ -896,11 +896,17 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   drawRobot() {
     const wobble = this.gameOver ? Math.sin(this.tick * 0.28) * 0.08 : 0;
-    const targetH = this.robot.sliding ? ROBOT_H * 0.58 : ROBOT_H;
-    const targetY = this.robot.sliding ? GROUND_Y - targetH : this.robot.y;
+    if (this.robot.sliding) {
+      this.robotSprite
+        .setPosition(this.robot.x + 6, GROUND_Y - 24)
+        .setDisplaySize(ROBOT_H * 0.9, ROBOT_W * 0.7)
+        .setRotation(-0.18)
+        .setAlpha(this.gameOver ? 0.88 : 1);
+      return;
+    }
     this.robotSprite
-      .setPosition(this.robot.x, targetY)
-      .setDisplaySize(ROBOT_W, targetH)
+      .setPosition(this.robot.x, this.robot.y)
+      .setDisplaySize(ROBOT_W, ROBOT_H)
       .setRotation(wobble)
       .setAlpha(this.gameOver ? 0.88 : 1);
   }
@@ -990,7 +996,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   robotHitbox() {
-    if (this.robot.sliding) return { x: this.robot.x + 8, y: GROUND_Y - ROBOT_H * 0.46, w: this.robot.w - 16, h: ROBOT_H * 0.44 };
+    if (this.robot.sliding) return { x: this.robot.x + 8, y: GROUND_Y - 28, w: ROBOT_H * 0.82, h: 24 };
     return { x: this.robot.x + 10, y: this.robot.y + 8, w: this.robot.w - 20, h: this.robot.h - 8 };
   }
 
