@@ -21,7 +21,7 @@ const GameConfig = Object.freeze({
   waterWidths: [78, 96, 84, 116, 88],
   boxHeights: [38, 46, 34],
   boxSize: 44,
-  obstaclePattern: ['water', 'box', 'platform', 'stackedBox', 'water', 'box', 'water', 'platform'],
+  obstaclePattern: ['water', 'box', 'slideBarrier', 'platform', 'stackedBox', 'water', 'box', 'slideBarrier', 'water', 'platform'],
 });
 
 const W = GameConfig.width;
@@ -58,11 +58,13 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   create() {
     this.best = Number(localStorage.getItem('robotBatteryRunnerBest') || 0);
-    this.keys = this.input.keyboard.addKeys('SPACE,UP,R');
+    this.keys = this.input.keyboard.addKeys('SPACE,UP,DOWN,SHIFT,R');
     this.input.keyboard.on('keydown-SPACE', () => this.startJump());
     this.input.keyboard.on('keydown-UP', () => this.startJump());
     this.input.keyboard.on('keyup-SPACE', () => this.stopJump());
     this.input.keyboard.on('keyup-UP', () => this.stopJump());
+    this.input.keyboard.on('keydown-DOWN', () => this.startSlide());
+    this.input.keyboard.on('keydown-SHIFT', () => this.startSlide());
     this.input.on('pointerdown', () => this.startJump());
     this.input.on('pointerup', () => this.stopJump());
     this.input.on('pointerupoutside', () => this.stopJump());
@@ -79,14 +81,14 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       stroke: '#07101d',
       strokeThickness: 4
     }).setDepth(20);
-    this.helpText = this.add.text(W / 2, 58, 'Neon forest sprint: collect batteries, dodge glow pools!', {
+    this.helpText = this.add.text(W / 2, 58, 'Neon Tokyo sprint: jump gaps, slide under laser gates!', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '24px',
       color: '#ffffff',
       stroke: '#07101d',
       strokeThickness: 5
     }).setOrigin(0.5).setDepth(20);
-    this.subHelpText = this.add.text(W / 2, 92, 'Space / ↑ / click = jump', {
+    this.subHelpText = this.add.text(W / 2, 92, 'Space / ↑ / click = jump   •   Down / Shift = slide', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
       color: '#bfd6f3',
@@ -122,7 +124,9 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       h: ROBOT_H,
       vy: 0,
       grounded: true,
-      blink: 0
+      blink: 0,
+      sliding: false,
+      slideFrames: 0
     };
     this.speed = GameConfig.startSpeed;
     this.score = 0;
@@ -199,6 +203,13 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.heldJumpFrames = 0;
   }
 
+  startSlide() {
+    if (this.gameOver || !this.robot.grounded || this.robot.sliding) return;
+    this.robot.sliding = true;
+    this.robot.slideFrames = 42;
+    this.addSparks(this.robot.x + 8, GROUND_Y - 6, 0x1ca7ff, 10);
+  }
+
   // Main loop order: tune speed/spawns, move the Runner World, resolve hazards, then draw.
   update() {
     if (this.gameOver && Phaser.Input.Keyboard.JustDown(this.keys.R)) this.resetRun();
@@ -224,6 +235,11 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     const previousY = this.robot.y;
     const extendingJump = !this.robot.grounded && this.jumpHeld && this.heldJumpFrames > 0;
     if (extendingJump) this.heldJumpFrames--;
+
+    if (this.robot.sliding) {
+      this.robot.slideFrames--;
+      if (this.robot.slideFrames <= 0) this.robot.sliding = false;
+    }
 
     this.robot.vy += extendingJump ? GRAVITY * HELD_JUMP_GRAVITY_SCALE : GRAVITY;
     this.robot.y += this.robot.vy;
@@ -273,6 +289,8 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       const nearPlatform = this.obstacles.some(o => o.kind === 'platform' && o.x > W - 260);
       if (nearPlatform || Math.random() < 0.45) this.obstacles.push(this.makeTexturedObstacle('stackedBox', W + 30, GROUND_Y - stackH, BOX_SIZE, stackH));
       else this.obstacles.push(this.makeTexturedObstacle('box', W + 30, GROUND_Y - BOX_SIZE, BOX_SIZE, BOX_SIZE));
+    } else if (kind === 'slideBarrier') {
+      this.obstacles.push({ x: W + 30, y: GROUND_Y - 86, w: 86, h: 48, kind: 'slideBarrier' });
     } else {
       this.obstacles.push(this.makeTexturedObstacle('platform', W + 30, GROUND_Y - 62, 220, 62));
     }
@@ -342,6 +360,9 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       }
       if (o.kind === 'box' || o.kind === 'stackedBox') {
         if (this.overlap(hit, { x: o.x + 4, y: o.y + 4, w: o.w - 8, h: o.h - 4 })) this.endRunWithSplash();
+      }
+      if (o.kind === 'slideBarrier') {
+        if (this.overlap(hit, { x: o.x + 6, y: o.y + 4, w: o.w - 12, h: o.h - 4 })) this.endRunWithSplash();
       }
     }
     for (const p of this.pickups) {
@@ -875,14 +896,33 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   drawRobot() {
     const wobble = this.gameOver ? Math.sin(this.tick * 0.28) * 0.08 : 0;
+    const targetH = this.robot.sliding ? ROBOT_H * 0.58 : ROBOT_H;
+    const targetY = this.robot.sliding ? GROUND_Y - targetH : this.robot.y;
     this.robotSprite
-      .setPosition(this.robot.x, this.robot.y)
+      .setPosition(this.robot.x, targetY)
+      .setDisplaySize(ROBOT_W, targetH)
       .setRotation(wobble)
       .setAlpha(this.gameOver ? 0.88 : 1);
   }
 
   drawObstacle(o) {
     if (o.kind === 'water') return this.drawWater(o);
+    if (o.kind === 'slideBarrier') return this.drawSlideBarrier(o);
+  }
+
+  drawSlideBarrier(o) {
+    const g = this.world;
+    g.fillStyle(0x090719, 0.92);
+    g.fillRoundedRect(o.x, o.y, o.w, o.h, 8);
+    g.fillStyle(0xff5fbf, 0.2);
+    g.fillRoundedRect(o.x - 10, o.y - 8, o.w + 20, o.h + 16, 12);
+    g.lineStyle(5, 0xff5fbf, 0.95);
+    g.lineBetween(o.x + 10, o.y + 10, o.x + o.w - 10, o.y + 10);
+    g.lineStyle(4, 0x9effff, 0.9);
+    g.lineBetween(o.x + 12, o.y + 26, o.x + o.w - 12, o.y + 26);
+    g.lineStyle(3, 0xffd36b, 0.75);
+    g.lineBetween(o.x + 8, GROUND_Y - 6, o.x + 22, o.y + o.h);
+    g.lineBetween(o.x + o.w - 8, GROUND_Y - 6, o.x + o.w - 22, o.y + o.h);
   }
 
   drawWater(o) {
@@ -932,6 +972,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   robotHitbox() {
+    if (this.robot.sliding) return { x: this.robot.x + 8, y: GROUND_Y - ROBOT_H * 0.46, w: this.robot.w - 16, h: ROBOT_H * 0.44 };
     return { x: this.robot.x + 10, y: this.robot.y + 8, w: this.robot.w - 20, h: this.robot.h - 8 };
   }
 
