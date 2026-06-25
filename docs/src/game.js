@@ -84,14 +84,14 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       stroke: '#07101d',
       strokeThickness: 4
     }).setDepth(20);
-    this.helpText = this.add.text(W / 2, 58, 'Neon Tokyo sprint: jump gaps, roll under laser gates!', {
+    this.helpText = this.add.text(W / 2, 58, 'Neon Tokyo sprint: jump gaps, slide under laser gates!', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '24px',
       color: '#ffffff',
       stroke: '#07101d',
       strokeThickness: 5
     }).setOrigin(0.5).setDepth(20);
-    this.subHelpText = this.add.text(W / 2, 92, 'Space / ↑ / W / click = jump   •   Down / Shift / S = roll', {
+    this.subHelpText = this.add.text(W / 2, 92, 'Space / ↑ / W / click = jump   •   Down / Shift / S = slide', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
       color: '#bfd6f3',
@@ -900,14 +900,12 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   drawRobot() {
     const wobble = this.gameOver ? Math.sin(this.tick * 0.28) * 0.08 : 0;
     if (this.robot.sliding) {
-      const rollSize = ROBOT_W * 0.82;
-      const spin = this.tick * 0.42;
       this.robotSprite
-        .setPosition(this.robot.x + 12, GROUND_Y - rollSize)
-        .setDisplaySize(rollSize, rollSize)
-        .setRotation(spin)
+        .setPosition(this.robot.x + 6, GROUND_Y - 27)
+        .setDisplaySize(ROBOT_H * 0.92, ROBOT_W * 0.62)
+        .setRotation(-Math.PI / 2)
         .setAlpha(this.gameOver ? 0.88 : 1);
-      this.drawRollTrail();
+      this.drawSlideTrail();
       return;
     }
     this.robotSprite
@@ -917,16 +915,14 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       .setAlpha(this.gameOver ? 0.88 : 1);
   }
 
-  drawRollTrail() {
-    this.effects.fillStyle(0x6ef7d2, 0.16);
-    this.effects.fillEllipse(this.robot.x + 34, GROUND_Y - 7, 76, 10);
-    this.effects.lineStyle(3, 0x9effff, 0.38);
+  drawSlideTrail() {
+    this.effects.fillStyle(0x6ef7d2, 0.18);
+    this.effects.fillEllipse(this.robot.x + 36, GROUND_Y - 8, 88, 10);
+    this.effects.lineStyle(3, 0x9effff, 0.42);
     for (let i = 0; i < 3; i++) {
-      const x = this.robot.x - 26 - i * 16 + ((this.tick * 2) % 12);
-      this.effects.lineBetween(x, GROUND_Y - 14 + i * 3, x + 16, GROUND_Y - 18 + i * 3);
+      const x = this.robot.x - 28 - i * 18 + ((this.tick * 2) % 12);
+      this.effects.lineBetween(x, GROUND_Y - 16 + i * 3, x + 18, GROUND_Y - 20 + i * 3);
     }
-    this.effects.lineStyle(2, 0xff5fbf, 0.32);
-    this.effects.strokeCircle(this.robot.x + 34, GROUND_Y - 24, 22);
   }
 
   drawObstacle(o) {
@@ -1021,7 +1017,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   robotHitbox() {
-    if (this.robot.sliding) return { x: this.robot.x + 10, y: GROUND_Y - ROBOT_W * 0.8, w: ROBOT_W * 0.8, h: ROBOT_W * 0.78 };
+    if (this.robot.sliding) return { x: this.robot.x + 8, y: GROUND_Y - 28, w: ROBOT_H * 0.82, h: 24 };
     return { x: this.robot.x + 10, y: this.robot.y + 8, w: this.robot.w - 20, h: this.robot.h - 8 };
   }
 
