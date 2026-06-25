@@ -58,13 +58,16 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
 
   create() {
     this.best = Number(localStorage.getItem('robotBatteryRunnerBest') || 0);
-    this.keys = this.input.keyboard.addKeys('SPACE,UP,DOWN,SHIFT,R');
+    this.keys = this.input.keyboard.addKeys('SPACE,UP,DOWN,SHIFT,W,S,R');
     this.input.keyboard.on('keydown-SPACE', () => this.startJump());
     this.input.keyboard.on('keydown-UP', () => this.startJump());
+    this.input.keyboard.on('keydown-W', () => this.startJump());
     this.input.keyboard.on('keyup-SPACE', () => this.stopJump());
     this.input.keyboard.on('keyup-UP', () => this.stopJump());
+    this.input.keyboard.on('keyup-W', () => this.stopJump());
     this.input.keyboard.on('keydown-DOWN', () => this.startSlide());
     this.input.keyboard.on('keydown-SHIFT', () => this.startSlide());
+    this.input.keyboard.on('keydown-S', () => this.startSlide());
     this.input.on('pointerdown', () => this.startJump());
     this.input.on('pointerup', () => this.stopJump());
     this.input.on('pointerupoutside', () => this.stopJump());
@@ -88,7 +91,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       stroke: '#07101d',
       strokeThickness: 5
     }).setOrigin(0.5).setDepth(20);
-    this.subHelpText = this.add.text(W / 2, 92, 'Space / ↑ / click = jump   •   Down / Shift = slide', {
+    this.subHelpText = this.add.text(W / 2, 92, 'Space / ↑ / W / click = jump   •   Down / Shift / S = slide', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
       color: '#bfd6f3',
