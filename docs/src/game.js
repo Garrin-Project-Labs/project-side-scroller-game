@@ -531,14 +531,6 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       row++;
     }
 
-    const shopW = w - 58;
-    g.fillStyle(0x100821, 1);
-    g.fillRoundedRect(x + 22, GROUND_Y - 82, shopW, 62, 8);
-    g.lineStyle(4, spec.trim, 0.62);
-    g.strokeRoundedRect(x + 22, GROUND_Y - 82, shopW, 62, 8);
-    g.lineStyle(2, spec.accent, 0.6);
-    for (let sx = x + 38; sx < x + w - 58; sx += 28) g.lineBetween(sx, GROUND_Y - 76, sx + 14, GROUND_Y - 28);
-
     g.fillStyle(spec.accent, 0.74);
     for (let bulb = x + 28; bulb < x + w - 26; bulb += 22) g.fillCircle(bulb, top + 16, 3.5);
     g.fillStyle(spec.trim, 0.32);
