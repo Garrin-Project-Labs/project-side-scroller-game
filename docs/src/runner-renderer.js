@@ -19,13 +19,13 @@ export class RunnerRenderer {
     this.hud.clear();
   }
 
-  draw({ robot, obstacles, sparks, tick, speed, district, gameOver, score, batteries, best, milestoneFlash }) {
+  draw({ robot, obstacles, sparks, tick, speed, district, gameOver, score, batteries, best, milestoneFlash, awaitingStart }) {
     this.clear();
     this.drawBackground({ tick, speed, district });
     for (const obstacle of obstacles) this.drawObstacle(obstacle, tick);
     this.drawRobot({ robot, tick, gameOver });
     this.drawSparks(sparks);
-    this.drawHud({ tick, gameOver, score, batteries, best, district, milestoneFlash });
+    this.drawHud({ tick, gameOver, score, batteries, best, district, milestoneFlash, awaitingStart });
   }
 
   drawBackground({ tick, speed, district }) {
@@ -562,12 +562,13 @@ export class RunnerRenderer {
     }
   }
 
-  drawHud({ tick, gameOver, score, batteries, best, district, milestoneFlash }) {
+  drawHud({ tick, gameOver, score, batteries, best, district, milestoneFlash, awaitingStart }) {
     const { width: W, height: H, districtPalettes } = this.tuning;
-    const { hudText, helpText, subHelpText, milestoneText } = this.texts;
+    const { hudText, helpText, subHelpText, startTitleText, startControlsText, startTrapsText, startPromptText, milestoneText } = this.texts;
     hudText.setText(`Score ${Math.floor(score)}   Batteries ${batteries}   Best ${best}`);
-    helpText.setVisible(!gameOver && tick < 210);
-    subHelpText.setVisible(!gameOver && tick < 210);
+    helpText.setVisible(!awaitingStart && !gameOver && tick < 210);
+    subHelpText.setVisible(!awaitingStart && !gameOver && tick < 210);
+    this.drawStartScreen({ tick, awaitingStart, startTitleText, startControlsText, startTrapsText, startPromptText });
     if (milestoneFlash > 0) {
       const alpha = Math.min(1, milestoneFlash / 45);
       milestoneText.setAlpha(alpha).setVisible(true);
@@ -576,5 +577,63 @@ export class RunnerRenderer {
     } else {
       milestoneText.setVisible(false);
     }
+  }
+
+  drawStartScreen({ tick, awaitingStart, startTitleText, startControlsText, startTrapsText, startPromptText }) {
+    for (const text of [startTitleText, startControlsText, startTrapsText, startPromptText]) text.setVisible(awaitingStart);
+    if (!awaitingStart) return;
+
+    const pulse = 0.82 + Math.sin(tick * 0.08) * 0.18;
+    this.hud.fillStyle(0x050612, 0.7);
+    this.hud.fillRect(0, 0, this.tuning.width, this.tuning.height);
+    this.hud.fillStyle(0x9effff, 0.08 * pulse);
+    this.hud.fillCircle(this.tuning.width / 2, 94, 210);
+
+    this.hud.fillStyle(0x090719, 0.88);
+    this.hud.fillRoundedRect(96, 142, 372, 196, 18);
+    this.hud.fillRoundedRect(492, 142, 372, 196, 18);
+    this.hud.lineStyle(4, 0x6ef7d2, 0.74);
+    this.hud.strokeRoundedRect(96, 142, 372, 196, 18);
+    this.hud.lineStyle(4, 0xff5fbf, 0.74);
+    this.hud.strokeRoundedRect(492, 142, 372, 196, 18);
+
+    this.hud.fillStyle(0x07101d, 0.92);
+    this.hud.fillRoundedRect(206, 372, 548, 62, 22);
+    this.hud.lineStyle(4, 0xffd36b, 0.75 + pulse * 0.25);
+    this.hud.strokeRoundedRect(206, 372, 548, 62, 22);
+    startPromptText.setAlpha(0.78 + pulse * 0.22);
+
+    this.drawStartTrapIcons(tick);
+  }
+
+  drawStartTrapIcons(tick) {
+    const bob = Math.sin(tick * 0.06) * 4;
+
+    this.hud.lineStyle(5, 0x9effff, 0.9);
+    this.hud.lineBetween(150, 296, 220, 296);
+    this.hud.lineBetween(282, 296, 352, 296);
+    this.hud.fillStyle(0x03050c, 0.96);
+    this.hud.fillRect(220, 296, 62, 34);
+    this.hud.fillStyle(0xff5fbf, 0.24);
+    this.hud.fillRect(228, 304, 46, 18);
+
+    this.hud.fillStyle(0x7a4a27, 0.96);
+    this.hud.fillRoundedRect(548, 284, 40, 40, 6);
+    this.hud.lineStyle(3, 0xffd36b, 0.8);
+    this.hud.strokeRoundedRect(548, 284, 40, 40, 6);
+    this.hud.lineBetween(552, 292, 584, 316);
+
+    this.hud.lineStyle(4, 0xff5fbf, 0.95);
+    this.hud.lineBetween(640, 246, 704, 246);
+    this.hud.lineBetween(640, 284, 704, 284);
+    this.hud.lineStyle(10, 0xff5fbf, 0.18);
+    this.hud.lineBetween(640, 266, 704, 266);
+    this.hud.lineStyle(4, 0x9effff, 0.9);
+    this.hud.lineBetween(642, 266, 702, 266);
+
+    this.hud.fillStyle(0xffd36b, 0.95);
+    this.hud.fillRoundedRect(744, 284 + bob, 22, 34, 6);
+    this.hud.fillStyle(0xffffff, 0.52);
+    this.hud.fillRect(750, 292 + bob, 10, 12);
   }
 }

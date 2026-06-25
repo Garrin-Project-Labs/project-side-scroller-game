@@ -72,6 +72,40 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       stroke: '#07101d',
       strokeThickness: 4
     }).setOrigin(0.5).setDepth(20);
+    this.startTitleText = this.add.text(W / 2, 96, 'NEON ROBOT RUNNER', {
+      fontFamily: 'Arial Black, Arial, sans-serif',
+      fontSize: '42px',
+      color: '#9effff',
+      align: 'center',
+      stroke: '#07101d',
+      strokeThickness: 8
+    }).setOrigin(0.5).setDepth(40);
+    this.startControlsText = this.add.text(286, 225, 'BUTTONS\n\nJump: Space / ↑ / W / click\nHold jump to clear long gaps\n\nSlide: Down / Shift / S\nDuck under laser gates', {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '21px',
+      color: '#ffffff',
+      align: 'left',
+      lineSpacing: 8,
+      stroke: '#07101d',
+      strokeThickness: 5
+    }).setOrigin(0.5).setDepth(40);
+    this.startTrapsText = this.add.text(674, 225, 'TRAPS\n\nGaps: jump over them\nCrates: hop over or onto them\n\nLaser gates: slide under\nBatteries: grab for bonus score', {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '21px',
+      color: '#ffffff',
+      align: 'left',
+      lineSpacing: 8,
+      stroke: '#07101d',
+      strokeThickness: 5
+    }).setOrigin(0.5).setDepth(40);
+    this.startPromptText = this.add.text(W / 2, 402, 'Press Space, ↑, W, or click to start!', {
+      fontFamily: 'Arial Black, Arial, sans-serif',
+      fontSize: '25px',
+      color: '#ffd36b',
+      align: 'center',
+      stroke: '#07101d',
+      strokeThickness: 6
+    }).setOrigin(0.5).setDepth(40);
     this.gameOverText = this.add.text(W / 2, H / 2 - 38, '', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '52px',
@@ -104,6 +138,10 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
         hudText: this.hudText,
         helpText: this.helpText,
         subHelpText: this.subHelpText,
+        startTitleText: this.startTitleText,
+        startControlsText: this.startControlsText,
+        startTrapsText: this.startTrapsText,
+        startPromptText: this.startPromptText,
         milestoneText: this.milestoneText,
       },
       robotSprite: this.robotSprite,
@@ -135,6 +173,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.milestoneFlash = 0;
     this.tick = 0;
     this.gameOver = false;
+    this.awaitingStart = true;
     this.jumpHeld = false;
     this.heldJumpFrames = 0;
     this.spawnTimer = Math.round(560 / this.speed);
@@ -180,6 +219,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       this.resetRun();
       return;
     }
+    if (this.awaitingStart) this.beginRun();
     if (!this.robot.grounded) return;
     this.robot.vy = JUMP_POWER;
     this.robot.grounded = false;
@@ -193,6 +233,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   startSlide() {
+    if (this.awaitingStart) return;
     if (this.gameOver || !this.robot.grounded || this.robot.sliding) return;
     this.robot.sliding = true;
     this.robot.slideFrames = 62;
@@ -202,9 +243,10 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   // Main loop order: tune speed/spawns, move the Runner World, resolve hazards, then draw.
   update() {
     if (this.gameOver && this.runnerInput.restartPressed(Phaser.Input.Keyboard)) this.resetRun();
+    if (this.awaitingStart && this.runnerInput.restartPressed(Phaser.Input.Keyboard)) this.beginRun();
     this.tick++;
 
-    if (!this.gameOver) {
+    if (!this.gameOver && !this.awaitingStart) {
       this.speed = Math.min(GameConfig.maxSpeed, this.speed + GameConfig.baseSpeedRamp + this.tick * GameConfig.timeSpeedRamp);
       this.score += 0.09 * this.speed;
       this.checkMilestone();
@@ -229,6 +271,10 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.milestoneFlash = 150;
     this.milestoneText.setText(`${DISTRICT_PALETTES[this.district].name} // ${milestone * MILESTONE_SCORE_STEP}`);
     this.addSparks(W / 2, 120, DISTRICT_PALETTES[this.district].moon, 28);
+  }
+
+  beginRun() {
+    this.awaitingStart = false;
   }
 
   updateRobot() {
@@ -388,6 +434,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       batteries: this.batteries,
       best: this.best,
       milestoneFlash: this.milestoneFlash,
+      awaitingStart: this.awaitingStart,
     });
   }
 
