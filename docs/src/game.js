@@ -293,7 +293,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       if (nearPlatform || Math.random() < 0.45) this.obstacles.push(this.makeTexturedObstacle('stackedBox', W + 30, GROUND_Y - stackH, BOX_SIZE, stackH));
       else this.obstacles.push(this.makeTexturedObstacle('box', W + 30, GROUND_Y - BOX_SIZE, BOX_SIZE, BOX_SIZE));
     } else if (kind === 'slideBarrier') {
-      this.obstacles.push({ x: W + 30, y: GROUND_Y - 84, w: 56, h: 42, kind: 'slideBarrier' });
+      this.obstacles.push({ x: W + 30, y: GROUND_Y - 176, w: 56, h: 136, kind: 'slideBarrier' });
     } else {
       this.obstacles.push(this.makeTexturedObstacle('platform', W + 30, GROUND_Y - 62, 220, 62));
     }
@@ -936,18 +936,23 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     const right = o.x + o.w - 4;
     const top = o.y + 2;
     const bottom = o.y + o.h;
-    const beamY = o.y + 18;
+    const beamY = GROUND_Y - 38;
+    const capY = o.y + 18;
     const pulse = 0.82 + Math.sin(this.tick * 0.18 + o.x * 0.03) * 0.14;
 
     g.fillStyle(0xff5fbf, 0.12 * pulse);
     g.fillCircle(left, beamY, 22);
     g.fillCircle(right, beamY, 22);
+    g.fillCircle(left, capY, 14);
+    g.fillCircle(right, capY, 14);
     g.fillRect(left, beamY - 10, right - left, 20);
 
     g.fillStyle(0x080613, 0.96);
     g.fillRoundedRect(left - 7, top, 14, bottom - top + 6, 5);
     g.fillRoundedRect(right - 7, top, 14, bottom - top + 6, 5);
     g.lineStyle(2, 0xffd36b, 0.65);
+    g.strokeRoundedRect(left - 7, top, 14, 12, 4);
+    g.strokeRoundedRect(right - 7, top, 14, 12, 4);
     g.strokeRoundedRect(left - 7, bottom - 6, 14, 12, 4);
     g.strokeRoundedRect(right - 7, bottom - 6, 14, 12, 4);
 
@@ -966,6 +971,8 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     g.lineBetween(right - 2, top + 8, right - 2, bottom - 4);
 
     g.fillStyle(0xffd36b, 0.95);
+    g.fillCircle(left, capY, 3);
+    g.fillCircle(right, capY, 3);
     g.fillCircle(left, beamY, 4);
     g.fillCircle(right, beamY, 4);
   }
