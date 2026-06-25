@@ -21,6 +21,13 @@ const GameConfig = Object.freeze({
   trenchWidths: [92, 116, 104, 132, 108],
   boxHeights: [54, 62, 50],
   boxSize: 58,
+  milestoneScoreStep: 2500,
+  districtPalettes: [
+    { name: 'District 1', top: 0x120820, mid: 0x321551, bottom: 0x050612, moon: 0xff73d4, glow: 0x8d5cff },
+    { name: 'District 2', top: 0x061731, mid: 0x123a66, bottom: 0x050914, moon: 0x6ef7d2, glow: 0x1ca7ff },
+    { name: 'District 3', top: 0x230816, mid: 0x592049, bottom: 0x080511, moon: 0xffd36b, glow: 0xff5fbf },
+    { name: 'District 4', top: 0x0b1028, mid: 0x331b68, bottom: 0x050612, moon: 0x9effff, glow: 0xff73d4 }
+  ],
   obstaclePattern: ['trench', 'box', 'slideBarrier', 'platform', 'stackedBox', 'trench', 'box', 'slideBarrier', 'trench', 'platform'],
 });
 
@@ -41,6 +48,8 @@ const TRENCH_WIDTHS = GameConfig.trenchWidths;
 const BOX_HEIGHTS = GameConfig.boxHeights;
 const BOX_SIZE = GameConfig.boxSize;
 const OBSTACLE_PATTERN = GameConfig.obstaclePattern;
+const MILESTONE_SCORE_STEP = GameConfig.milestoneScoreStep;
+const DISTRICT_PALETTES = GameConfig.districtPalettes;
 
 // RobotBatteryRunnerScene owns the Runner World. Rendering is intentionally immediate-mode
 // Phaser Graphics for now: simple data objects are easier to tune than converted DOM/canvas code.
@@ -114,6 +123,14 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       stroke: '#07101d',
       strokeThickness: 5
     }).setOrigin(0.5).setDepth(30);
+    this.milestoneText = this.add.text(W / 2, 142, '', {
+      fontFamily: 'Arial Black, Arial, sans-serif',
+      fontSize: '34px',
+      color: '#9effff',
+      align: 'center',
+      stroke: '#07101d',
+      strokeThickness: 7
+    }).setOrigin(0.5).setDepth(25);
 
     this.resetRun();
   }
@@ -134,6 +151,9 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.speed = GameConfig.startSpeed;
     this.score = 0;
     this.batteries = 0;
+    this.district = 0;
+    this.lastMilestone = 0;
+    this.milestoneFlash = 0;
     this.tick = 0;
     this.gameOver = false;
     this.jumpHeld = false;
@@ -178,6 +198,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     ];
     this.gameOverText.setText('');
     this.restartText.setText('');
+    this.milestoneText.setText('');
     this.robotSprite.setPosition(this.robot.x, this.robot.y).setRotation(0);
   }
 
@@ -221,6 +242,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     if (!this.gameOver) {
       this.speed = Math.min(GameConfig.maxSpeed, this.speed + GameConfig.baseSpeedRamp + this.tick * GameConfig.timeSpeedRamp);
       this.score += 0.09 * this.speed;
+      this.checkMilestone();
       this.spawnTimer--;
       this.batteryTimer--;
       if (this.spawnTimer <= 0) this.spawnNextObstacle();
@@ -232,6 +254,16 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.handleRunnerCollisions();
     this.removeOffscreenObjects();
     this.draw();
+  }
+
+  checkMilestone() {
+    const milestone = Math.floor(this.score / MILESTONE_SCORE_STEP);
+    if (milestone <= this.lastMilestone) return;
+    this.lastMilestone = milestone;
+    this.district = milestone % DISTRICT_PALETTES.length;
+    this.milestoneFlash = 150;
+    this.milestoneText.setText(`${DISTRICT_PALETTES[this.district].name} // ${milestone * MILESTONE_SCORE_STEP}`);
+    this.addSparks(W / 2, 120, DISTRICT_PALETTES[this.district].moon, 28);
   }
 
   updateRobot() {
@@ -417,12 +449,13 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   drawBackground() {
-    this.bg.fillGradientStyle(0x120820, 0x120820, 0x321551, 0x050612, 1);
+    const palette = DISTRICT_PALETTES[this.district % DISTRICT_PALETTES.length];
+    this.bg.fillGradientStyle(palette.top, palette.top, palette.mid, palette.bottom, 1);
     this.bg.fillRect(0, 0, W, H);
 
-    this.bg.fillStyle(0xff73d4, 0.9);
+    this.bg.fillStyle(palette.moon, 0.9);
     this.bg.fillCircle(818, 72, 36);
-    this.bg.fillStyle(0x8d5cff, 0.18);
+    this.bg.fillStyle(palette.glow, 0.18);
     this.bg.fillCircle(818, 72, 68);
 
     this.drawCitySparkles();
@@ -987,6 +1020,15 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.hudText.setText(`Score ${Math.floor(this.score)}   Batteries ${this.batteries}   Best ${this.best}`);
     this.helpText.setVisible(!this.gameOver && this.tick < 210);
     this.subHelpText.setVisible(!this.gameOver && this.tick < 210);
+    if (this.milestoneFlash > 0) {
+      this.milestoneFlash--;
+      const alpha = Math.min(1, this.milestoneFlash / 45);
+      this.milestoneText.setAlpha(alpha).setVisible(true);
+      this.hud.fillStyle(DISTRICT_PALETTES[this.district].glow, 0.08 * alpha);
+      this.hud.fillRect(0, 0, W, H);
+    } else {
+      this.milestoneText.setVisible(false);
+    }
   }
 
   robotHitbox() {
