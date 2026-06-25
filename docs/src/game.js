@@ -445,7 +445,13 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       { top: 58, w: 182, face: 0x132642, trim: 0x6ef7d2, accent: 0xffd36b, roof: 'antenna' },
       { top: 146, w: 168, face: 0x24102a, trim: 0xff5fbf, accent: 0x8d5cff, roof: 'flat' },
       { top: 82, w: 250, face: 0x0f1f34, trim: 0x8d5cff, accent: 0xff73d4, roof: 'pipes' },
-      { top: 118, w: 196, face: 0x2b183d, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' }
+      { top: 118, w: 196, face: 0x2b183d, trim: 0xffd36b, accent: 0x6ef7d2, roof: 'slant' },
+      { top: 44, w: 154, face: 0x102b45, trim: 0x1ca7ff, accent: 0x9effff, roof: 'spire', windows: 'thin' },
+      { top: 138, w: 276, face: 0x271529, trim: 0xff5fbf, accent: 0xffd36b, roof: 'arcade', windows: 'wide' },
+      { top: 76, w: 224, face: 0x0e2a28, trim: 0x6ef7d2, accent: 0xff73d4, roof: 'billboardTop', windows: 'grid' },
+      { top: 104, w: 188, face: 0x2d203b, trim: 0xffd36b, accent: 0x8d5cff, roof: 'vents', windows: 'thin' },
+      { top: 62, w: 258, face: 0x151538, trim: 0x8d5cff, accent: 0x6ef7d2, roof: 'antenna', windows: 'wide' },
+      { top: 132, w: 142, face: 0x2b1028, trim: 0xff73d4, accent: 0x1ca7ff, roof: 'stack', windows: 'grid' }
     ];
     const stripWidth = segment * fronts.length;
     const offset = (this.tick * this.speed * 0.34) % stripWidth;
@@ -491,11 +497,13 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
         const palette = [0xffd36b, 0x6ef7d2, 0xff5fbf, 0x8d5cff];
         const color = palette[(index * 3 + row + col * 2) % palette.length];
         const lit = (index + row * 2 + col) % 5 !== 1;
+        const winW = spec.windows === 'thin' ? 8 : spec.windows === 'wide' ? 24 : 16;
+        const winH = spec.windows === 'thin' ? 22 : spec.windows === 'wide' ? 10 : 14;
         g.fillStyle(lit ? color : 0x090719, lit ? 0.38 : 0.72);
-        g.fillRect(wx, wy, 16, 14);
+        g.fillRect(wx, wy, winW, winH);
         if (lit) {
           g.fillStyle(0xffffff, 0.12);
-          g.fillRect(wx + 3, wy + 2, 5, 10);
+          g.fillRect(wx + 3, wy + 2, Math.max(4, winW * 0.32), Math.max(6, winH - 4));
         }
         col++;
       }
@@ -550,6 +558,29 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       g.lineStyle(2, spec.accent, 0.4);
       g.lineBetween(x + 42, top - 30, x + 62, top - 30);
       g.lineBetween(x + 92, top - 20, x + 122, top - 20);
+    } else if (spec.roof === 'spire') {
+      g.fillStyle(0x090719, 0.98);
+      g.fillTriangle(x + w / 2 - 28, top - 8, x + w / 2, top - 64, x + w / 2 + 28, top - 8);
+      g.lineStyle(3, spec.trim, 0.5);
+      g.lineBetween(x + w / 2, top - 64, x + w / 2, top - 92);
+    } else if (spec.roof === 'arcade') {
+      g.lineStyle(6, spec.accent, 0.36);
+      for (let ax = x + 24; ax < x + w - 40; ax += 44) g.strokeCircle(ax, top + 10, 18);
+    } else if (spec.roof === 'billboardTop') {
+      g.fillStyle(0x100821, 0.98);
+      g.fillRoundedRect(x + 24, top - 42, w - 58, 32, 6);
+      g.lineStyle(3, spec.trim, 0.58);
+      g.strokeRoundedRect(x + 24, top - 42, w - 58, 32, 6);
+      g.lineStyle(2, spec.accent, 0.42);
+      g.lineBetween(x + 42, top - 10, x + 42, top + 8);
+      g.lineBetween(x + w - 52, top - 10, x + w - 52, top + 8);
+    } else if (spec.roof === 'vents') {
+      g.fillStyle(0x0b0718, 0.98);
+      for (let vx = x + 28; vx < x + w - 40; vx += 38) {
+        g.fillRect(vx, top - 30, 22, 20);
+        g.lineStyle(2, spec.accent, 0.36);
+        g.lineBetween(vx + 4, top - 24, vx + 18, top - 24);
+      }
     }
   }
 
