@@ -49,6 +49,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.world = this.add.graphics();
     this.effects = this.add.graphics();
     this.hud = this.add.graphics();
+    this.startOverlay = this.add.graphics().setDepth(35);
     this.spriteAdapter = new RunnerSpriteAdapter(this);
     this.robotSprite = this.add.image(ROBOT_X, GROUND_Y - ROBOT_H, 'robot').setOrigin(0, 0).setDisplaySize(ROBOT_W, ROBOT_H).setDepth(8);
     this.hudText = this.add.text(18, 16, '', {
@@ -72,7 +73,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       stroke: '#07101d',
       strokeThickness: 4
     }).setOrigin(0.5).setDepth(20);
-    this.startTitleText = this.add.text(W / 2, 96, 'NEON ROBOT RUNNER', {
+    this.startTitleText = this.add.text(W / 2, 86, 'NEON ROBOT RUNNER', {
       fontFamily: 'Arial Black, Arial, sans-serif',
       fontSize: '42px',
       color: '#9effff',
@@ -80,21 +81,21 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       stroke: '#07101d',
       strokeThickness: 8
     }).setOrigin(0.5).setDepth(40);
-    this.startControlsText = this.add.text(286, 225, 'BUTTONS\n\nJump: Space / ↑ / W / click\nHold jump to clear long gaps\n\nSlide: Down / Shift / S\nDuck under laser gates', {
+    this.startControlsText = this.add.text(318, 220, 'BUTTONS\nJump: Space / ↑ / W / click\nHold jump to clear long gaps\n\nSlide: Down / Shift / S\nDuck under laser gates', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '21px',
+      fontSize: '20px',
       color: '#ffffff',
       align: 'left',
-      lineSpacing: 8,
+      lineSpacing: 5,
       stroke: '#07101d',
       strokeThickness: 5
     }).setOrigin(0.5).setDepth(40);
-    this.startTrapsText = this.add.text(674, 225, 'TRAPS\n\nGaps: jump over them\nCrates: hop over or onto them\n\nLaser gates: slide under\nBatteries: grab for bonus score', {
+    this.startTrapsText = this.add.text(642, 220, 'TRAPS\nGaps: jump over them\nCrates: hop over or onto them\n\nLaser gates: slide under\nBatteries: grab for bonus score', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '21px',
+      fontSize: '20px',
       color: '#ffffff',
       align: 'left',
-      lineSpacing: 8,
+      lineSpacing: 5,
       stroke: '#07101d',
       strokeThickness: 5
     }).setOrigin(0.5).setDepth(40);
@@ -133,7 +134,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.renderer = new RunnerRenderer({
       scene: this,
       tuning: GameConfig,
-      graphs: { bg: this.bg, world: this.world, effects: this.effects, hud: this.hud },
+      graphs: { bg: this.bg, world: this.world, effects: this.effects, hud: this.hud, startOverlay: this.startOverlay },
       texts: {
         hudText: this.hudText,
         helpText: this.helpText,

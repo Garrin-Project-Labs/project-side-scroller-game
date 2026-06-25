@@ -6,6 +6,7 @@ export class RunnerRenderer {
     this.world = graphs.world;
     this.effects = graphs.effects;
     this.hud = graphs.hud;
+    this.startOverlay = graphs.startOverlay;
     this.texts = texts;
     this.robotSprite = robotSprite;
     this.signs = signs;
@@ -17,6 +18,7 @@ export class RunnerRenderer {
     this.world.clear();
     this.effects.clear();
     this.hud.clear();
+    this.startOverlay.clear();
   }
 
   draw({ robot, obstacles, sparks, tick, speed, district, gameOver, score, batteries, best, milestoneFlash, awaitingStart }) {
@@ -584,23 +586,22 @@ export class RunnerRenderer {
     if (!awaitingStart) return;
 
     const pulse = 0.82 + Math.sin(tick * 0.08) * 0.18;
-    this.hud.fillStyle(0x050612, 0.86);
-    this.hud.fillRect(0, 0, this.tuning.width, this.tuning.height);
-    this.hud.fillStyle(0x9effff, 0.08 * pulse);
-    this.hud.fillCircle(this.tuning.width / 2, 94, 210);
+    this.startOverlay.fillStyle(0x050612, 0.98);
+    this.startOverlay.fillRect(0, 0, this.tuning.width, this.tuning.height);
+    this.startOverlay.fillStyle(0x9effff, 0.08 * pulse);
+    this.startOverlay.fillCircle(this.tuning.width / 2, 84, 190);
 
-    this.hud.fillStyle(0x090719, 0.98);
-    this.hud.fillRoundedRect(96, 142, 372, 196, 18);
-    this.hud.fillRoundedRect(492, 142, 372, 196, 18);
-    this.hud.lineStyle(4, 0x6ef7d2, 0.74);
-    this.hud.strokeRoundedRect(96, 142, 372, 196, 18);
-    this.hud.lineStyle(4, 0xff5fbf, 0.74);
-    this.hud.strokeRoundedRect(492, 142, 372, 196, 18);
+    this.startOverlay.fillStyle(0x090719, 1);
+    this.startOverlay.fillRoundedRect(142, 138, 676, 194, 18);
+    this.startOverlay.lineStyle(4, 0x6ef7d2, 0.58);
+    this.startOverlay.strokeRoundedRect(142, 138, 676, 194, 18);
+    this.startOverlay.lineStyle(2, 0xff5fbf, 0.42);
+    this.startOverlay.lineBetween(480, 158, 480, 312);
 
-    this.hud.fillStyle(0x07101d, 0.98);
-    this.hud.fillRoundedRect(206, 372, 548, 62, 22);
-    this.hud.lineStyle(4, 0xffd36b, 0.75 + pulse * 0.25);
-    this.hud.strokeRoundedRect(206, 372, 548, 62, 22);
+    this.startOverlay.fillStyle(0x07101d, 1);
+    this.startOverlay.fillRoundedRect(206, 372, 548, 62, 22);
+    this.startOverlay.lineStyle(4, 0xffd36b, 0.75 + pulse * 0.25);
+    this.startOverlay.strokeRoundedRect(206, 372, 548, 62, 22);
     startPromptText.setAlpha(0.78 + pulse * 0.22);
   }
 }
