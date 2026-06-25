@@ -435,7 +435,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   drawNearTokyoStreetfront() {
-    const segment = 260;
+    const segment = 190;
     const fronts = [
       { top: 88, w: 248, face: 0x22133e, trim: 0x6ef7d2, accent: 0xff73d4, roof: 'flat' },
       { top: 126, w: 226, face: 0x17102f, trim: 0xff5fbf, accent: 0xffd36b, roof: 'antenna' },
@@ -538,19 +538,22 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       g.closePath();
       g.fillPath();
     } else if (spec.shape === 'dome') {
-      g.fillRect(x + 10, top + 54, w - 24, bottom - top - 54);
-      g.fillCircle(x + w / 2, top + 56, (w - 28) / 2);
-      g.fillStyle(0x070512, 0.98);
-      g.fillRect(x, top + 56, 10, bottom - top - 56);
-      g.fillRect(x + w - 14, top + 56, 14, bottom - top - 56);
+      const r = (w - 28) / 2;
+      const baseY = top + 58;
+      g.fillRect(x + 10, baseY, w - 24, bottom - baseY);
+      g.fillCircle(x + w / 2, baseY, r);
+      g.fillStyle(0x120820, 0.98);
+      g.fillRect(x - 4, top, w + 8, baseY - r - top);
+      g.fillRect(x - 4, baseY, 14, bottom - baseY);
+      g.fillRect(x + w - 14, baseY, 18, bottom - baseY);
     } else if (spec.shape === 'stepped') {
-      g.fillRect(x + 46, top + 12, w - 92, bottom - top - 12);
-      g.fillRect(x + 24, top + 58, w - 48, bottom - top - 58);
-      g.fillRect(x + 10, top + 104, w - 24, bottom - top - 104);
+      g.fillRect(x + 66, top + 12, w - 132, 52);
+      g.fillRect(x + 38, top + 58, w - 76, 60);
+      g.fillRect(x + 10, top + 112, w - 24, bottom - top - 112);
     } else if (spec.shape === 'skinnyStack') {
-      g.fillRect(x + 36, top + 10, w - 72, 76);
-      g.fillRect(x + 22, top + 76, w - 44, 86);
-      g.fillRect(x + 10, top + 150, w - 24, bottom - top - 150);
+      g.fillRect(x + 48, top + 10, w - 96, 62);
+      g.fillRect(x + 30, top + 66, w - 60, 78);
+      g.fillRect(x + 10, top + 138, w - 24, bottom - top - 138);
     } else {
       g.fillRect(x + 10, top + 12, w - 24, bottom - top - 12);
     }
@@ -569,37 +572,56 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       g.lineBetween(x + cut, top + 14, x + 10, bottom);
       g.lineBetween(x + w - cut, top + 14, x + w - 10, bottom);
     } else if (spec.shape === 'dome') {
-      g.strokeCircle(x + w / 2, top + 56, (w - 28) / 2);
+      g.strokeCircle(x + w / 2, top + 58, (w - 28) / 2);
     } else if (spec.shape === 'stepped') {
-      g.lineBetween(x + 46, top + 14, x + w - 46, top + 14);
-      g.lineBetween(x + 24, top + 58, x + w - 24, top + 58);
-      g.lineBetween(x + 10, top + 104, x + w - 10, top + 104);
+      g.lineBetween(x + 66, top + 14, x + w - 66, top + 14);
+      g.lineBetween(x + 38, top + 58, x + w - 38, top + 58);
+      g.lineBetween(x + 10, top + 112, x + w - 10, top + 112);
     } else if (spec.shape === 'skinnyStack') {
-      g.strokeRect(x + 36, top + 10, w - 72, 76);
-      g.strokeRect(x + 22, top + 76, w - 44, 86);
+      g.strokeRect(x + 48, top + 10, w - 96, 62);
+      g.strokeRect(x + 30, top + 66, w - 60, 78);
     }
   }
 
   cutBuildingSilhouette(x, top, w, spec) {
-    if (spec.shape !== 'taper') return;
+    if (!spec.shape) return;
     const g = this.bg;
     const bottom = GROUND_Y + 10;
-    const cut = spec.cut ?? 28;
     g.fillStyle(0x120820, 0.96);
-    g.beginPath();
-    g.moveTo(x, top);
-    g.lineTo(x + cut - 2, top + 12);
-    g.lineTo(x + 8, bottom);
-    g.lineTo(x, bottom);
-    g.closePath();
-    g.fillPath();
-    g.beginPath();
-    g.moveTo(x + w, top);
-    g.lineTo(x + w - cut + 2, top + 12);
-    g.lineTo(x + w - 8, bottom);
-    g.lineTo(x + w, bottom);
-    g.closePath();
-    g.fillPath();
+
+    if (spec.shape === 'taper') {
+      const cut = spec.cut ?? 28;
+      g.beginPath();
+      g.moveTo(x, top);
+      g.lineTo(x + cut - 2, top + 12);
+      g.lineTo(x + 8, bottom);
+      g.lineTo(x, bottom);
+      g.closePath();
+      g.fillPath();
+      g.beginPath();
+      g.moveTo(x + w, top);
+      g.lineTo(x + w - cut + 2, top + 12);
+      g.lineTo(x + w - 8, bottom);
+      g.lineTo(x + w, bottom);
+      g.closePath();
+      g.fillPath();
+    } else if (spec.shape === 'dome') {
+      const baseY = top + 58;
+      const r = (w - 28) / 2;
+      g.fillRect(x - 4, top, w + 8, baseY - r - top);
+      g.fillRect(x - 4, baseY, 14, bottom - baseY);
+      g.fillRect(x + w - 14, baseY, 18, bottom - baseY);
+    } else if (spec.shape === 'stepped') {
+      g.fillRect(x - 2, top, 68, bottom - top);
+      g.fillRect(x + w - 66, top, 68, bottom - top);
+      g.fillRect(x + 10, top, 28, 112);
+      g.fillRect(x + w - 38, top, 28, 112);
+    } else if (spec.shape === 'skinnyStack') {
+      g.fillRect(x - 2, top, 50, bottom - top);
+      g.fillRect(x + w - 48, top, 50, bottom - top);
+      g.fillRect(x + 10, top, 20, 138);
+      g.fillRect(x + w - 30, top, 20, 138);
+    }
   }
 
   drawStreetfrontRoof(x, top, w, spec) {
