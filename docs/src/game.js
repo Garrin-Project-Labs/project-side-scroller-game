@@ -1,6 +1,7 @@
 import { RunnerAssets } from './assets.js';
 import { groundLanding, hitsHazard, hitsPickup, pickupHitbox, platformLanding, robotHitbox } from './collision-rules.js';
 import { createObstaclePatternState, nextObstacleSpawnDelay, nextObstacleSpec } from './obstacle-pattern.js';
+import { RunnerSpriteAdapter } from './runner-sprite-adapter.js';
 import { GameConfig } from './runner-tuning.js';
 import { TokyoSigns } from './tokyo-signs.js';
 import { TokyoStreetfronts } from './tokyo-streetfronts.js';
@@ -51,6 +52,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.world = this.add.graphics();
     this.effects = this.add.graphics();
     this.hud = this.add.graphics();
+    this.spriteAdapter = new RunnerSpriteAdapter(this);
     this.robotSprite = this.add.image(ROBOT_X, GROUND_Y - ROBOT_H, 'robot').setOrigin(0, 0).setDisplaySize(ROBOT_W, ROBOT_H).setDepth(8);
     this.hudText = this.add.text(18, 16, '', {
       fontFamily: 'Arial, sans-serif',
@@ -127,6 +129,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     this.spawnTimer = Math.round(560 / this.speed);
     this.batteryTimer = Math.round(820 / this.speed);
     this.obstaclePattern = createObstaclePatternState();
+    this.nextRunnerObjectId = 1;
     this.obstacles = [];
     this.pickups = [];
     this.sparks = [];
@@ -153,7 +156,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   clearDynamicObjects() {
-    for (const item of [...(this.obstacles ?? []), ...(this.pickups ?? [])]) item.sprite?.destroy();
+    this.spriteAdapter?.destroyAll();
     this.obstacles = [];
     this.pickups = [];
     this.sparks = [];
@@ -261,25 +264,23 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       groundY: GROUND_Y,
       currentObstacles: this.obstacles,
     });
-    this.obstacles.push(this.makeTexturedObstacle(obstacle));
+    this.obstacles.push(this.addRunnerObject(obstacle));
     this.spawnTimer = nextObstacleSpawnDelay({ patternState: this.obstaclePattern, tuning: GameConfig, speed: this.speed });
   }
 
-  makeTexturedObstacle(obstacle) {
-    if (!obstacle.texture) return obstacle;
-    const sprite = this.add.image(obstacle.x, obstacle.y, obstacle.texture)
-      .setOrigin(0, 0)
-      .setDisplaySize(obstacle.w, obstacle.h)
-      .setDepth(obstacle.depth);
-    return { ...obstacle, sprite };
+  addRunnerObject(object) {
+    const runnerObject = { id: this.nextRunnerObjectId++, ...object };
+    this.spriteAdapter.addObstacle(runnerObject);
+    return runnerObject;
   }
 
   spawnNextBattery() {
     const high = this.obstaclePattern.index % 2 === 0;
     const x = W + 40;
     const y = high ? GROUND_Y - 168 : GROUND_Y - 112;
-    const sprite = this.add.image(x, y, 'battery').setOrigin(0, 0).setDisplaySize(34, 50).setDepth(5);
-    this.pickups.push({ x, y, w: 34, h: 50, bob: Math.random() * 10, collected: false, sprite });
+    const pickup = { id: this.nextRunnerObjectId++, x, y, w: 34, h: 50, bob: Math.random() * 10, collected: false };
+    this.pickups.push(pickup);
+    this.spriteAdapter.addPickup(pickup);
     this.batteryTimer = Math.round(BATTERY_GAP_PIXELS / this.speed);
   }
 
@@ -290,12 +291,12 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
     }
     for (const o of this.obstacles) {
       o.x -= this.gameOver ? this.speed * 0.2 : this.speed;
-      o.sprite?.setPosition(o.x, o.y);
+      this.spriteAdapter.updateObstacle(o);
     }
     for (const p of this.pickups) {
       p.x -= this.gameOver ? this.speed * 0.2 : this.speed;
       p.bob += 0.08;
-      p.sprite?.setPosition(p.x, p.y + Math.sin(p.bob) * 8);
+      this.spriteAdapter.updatePickup(p);
     }
     for (const s of this.sparks) {
       s.x += s.vx;
@@ -308,12 +309,12 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   removeOffscreenObjects() {
     this.obstacles = this.obstacles.filter(o => {
       if (o.x + o.w > -40) return true;
-      o.sprite?.destroy();
+      this.spriteAdapter.destroyObject(o);
       return false;
     });
     this.pickups = this.pickups.filter(p => {
       if (p.x + p.w > -40 && !p.collected) return true;
-      p.sprite?.destroy();
+      this.spriteAdapter.destroyObject(p);
       return false;
     });
     this.sparks = this.sparks.filter(s => s.life > 0);
@@ -330,7 +331,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       const pickupBox = pickupHitbox(p);
       if (hitsPickup(hit, p)) {
         p.collected = true;
-        p.sprite?.destroy();
+        this.spriteAdapter.destroyObject(p);
         this.batteries++;
         this.score += 60;
         this.addSparks(p.x + p.w / 2, pickupBox.y + p.h / 2, 0xffd95a, 16);
