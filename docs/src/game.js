@@ -900,11 +900,10 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   drawRobot() {
     const wobble = this.gameOver ? Math.sin(this.tick * 0.28) * 0.08 : 0;
     if (this.robot.sliding) {
-      const slideSquash = 0.54 + Math.sin(this.tick * 0.45) * 0.03;
       this.robotSprite
-        .setPosition(this.robot.x + 16, GROUND_Y - ROBOT_H * slideSquash + 16)
-        .setDisplaySize(ROBOT_H * 0.78, ROBOT_H * slideSquash)
-        .setRotation(-1.18)
+        .setPosition(this.robot.x - 4, GROUND_Y - 18)
+        .setDisplaySize(ROBOT_H * 0.96, ROBOT_W * 0.62)
+        .setRotation(0)
         .setAlpha(this.gameOver ? 0.88 : 1);
       this.drawSlideTrail();
       return;
@@ -927,7 +926,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
       this.effects.lineBetween(x, GROUND_Y - 15 + i * 2, x + 22, GROUND_Y - 19 + i * 2);
     }
     this.effects.lineStyle(2, 0xff5fbf, 0.28);
-    this.effects.lineBetween(this.robot.x + 18, GROUND_Y - 22, this.robot.x + 86, GROUND_Y - 13);
+    this.effects.lineBetween(this.robot.x + 8, GROUND_Y - 9, this.robot.x + 92, GROUND_Y - 8);
   }
 
   drawObstacle(o) {
@@ -1024,7 +1023,7 @@ class RobotBatteryRunnerScene extends Phaser.Scene {
   }
 
   robotHitbox() {
-    if (this.robot.sliding) return { x: this.robot.x + 16, y: GROUND_Y - 26, w: ROBOT_H * 0.72, h: 24 };
+    if (this.robot.sliding) return { x: this.robot.x + 2, y: GROUND_Y - 24, w: ROBOT_H * 0.9, h: 22 };
     return { x: this.robot.x + 10, y: this.robot.y + 8, w: this.robot.w - 20, h: this.robot.h - 8 };
   }
 
